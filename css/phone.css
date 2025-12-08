@@ -1,0 +1,518 @@
+/* ========================================
+   全屏沉浸式手机界面
+   电脑端显示手机框架，手机端全屏
+   ======================================== */
+
+/* 外层背景 - 电脑端显示 */
+body {
+    background: #0a0a0f;
+}
+
+/* 电脑端：模糊背景装饰 */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background:
+        radial-gradient(ellipse at 30% 30%, rgba(90, 143, 207, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 70% 70%, rgba(139, 108, 176, 0.08) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* 手机容器 */
+.phone-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 手机框架 - 电脑端显示 */
+.phone-frame {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    max-width: 430px;
+    max-height: 932px;
+    overflow: hidden;
+}
+
+/* 电脑端样式 */
+@media (min-width: 500px) {
+    .phone-frame {
+        border-radius: 50px;
+        box-shadow:
+            0 0 0 12px #1a1a24,
+            0 0 0 14px #2a2a3a,
+            0 30px 60px rgba(0, 0, 0, 0.5),
+            0 10px 20px rgba(0, 0, 0, 0.3);
+    }
+}
+
+/* 手机端全屏 */
+@media (max-width: 499px) {
+    .phone-frame {
+        max-width: none;
+        max-height: none;
+        border-radius: 0;
+    }
+}
+
+/* 壁纸背景 */
+.wallpaper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url('../Graph/IMG_8473.JPEG');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    z-index: 0;
+}
+
+/* 壁纸柔化遮罩 - 更透明、更梦幻 */
+.wallpaper::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+        180deg,
+        rgba(180, 200, 230, 0.08) 0%,
+        rgba(200, 210, 240, 0.03) 30%,
+        rgba(180, 190, 220, 0.05) 60%,
+        rgba(140, 160, 200, 0.15) 100%
+    );
+    pointer-events: none;
+}
+
+/* ========================================
+   闪烁星星特效
+   ======================================== */
+.stars {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.star {
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    background: white;
+    border-radius: 50%;
+    animation: twinkle var(--duration, 3s) ease-in-out infinite;
+    animation-delay: var(--delay, 0s);
+    opacity: 0;
+}
+
+/* 星星位置和动画参数 */
+.star:nth-child(1) { top: 8%; left: 15%; --duration: 2.5s; --delay: 0s; }
+.star:nth-child(2) { top: 12%; left: 75%; --duration: 3.5s; --delay: 0.5s; }
+.star:nth-child(3) { top: 20%; left: 45%; --duration: 2.8s; --delay: 1s; }
+.star:nth-child(4) { top: 15%; left: 88%; --duration: 4s; --delay: 1.5s; }
+.star:nth-child(5) { top: 25%; left: 25%; --duration: 3.2s; --delay: 0.3s; }
+.star:nth-child(6) { top: 35%; left: 60%; --duration: 2.6s; --delay: 2s; }
+.star:nth-child(7) { top: 5%; left: 55%; --duration: 3.8s; --delay: 0.8s; }
+.star:nth-child(8) { top: 30%; left: 10%; --duration: 3s; --delay: 1.2s; }
+.star:nth-child(9) { top: 18%; left: 35%; --duration: 2.4s; --delay: 1.8s; }
+.star:nth-child(10) { top: 40%; left: 80%; --duration: 3.6s; --delay: 0.6s; }
+.star:nth-child(11) { top: 28%; left: 92%; --duration: 2.9s; --delay: 2.2s; }
+.star:nth-child(12) { top: 10%; left: 5%; --duration: 3.3s; --delay: 1.4s; }
+
+@keyframes twinkle {
+    0%, 100% {
+        opacity: 0;
+        transform: scale(0.5);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1);
+        box-shadow: 0 0 6px 2px rgba(255, 255, 255, 0.6);
+    }
+}
+
+/* 状态栏 */
+.status-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: var(--status-bar-height);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    padding-top: env(safe-area-inset-top, 0);
+    z-index: 100;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, transparent 100%);
+}
+
+.status-bar .time {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+}
+
+.status-icons {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.status-icons svg {
+    width: 18px;
+    height: 18px;
+    opacity: 0.9;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));
+}
+
+/* ========================================
+   主屏幕
+   ======================================== */
+.home-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: calc(var(--status-bar-height) + 20px) 24px calc(var(--home-bar-height) + 30px);
+    padding-top: calc(env(safe-area-inset-top, 0) + var(--status-bar-height) + 20px);
+    padding-bottom: calc(env(safe-area-inset-bottom, 0) + var(--home-bar-height) + 30px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    z-index: 10;
+}
+
+.home-screen.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* ========================================
+   日期显示
+   ======================================== */
+.date-display {
+    text-align: center;
+    margin-bottom: auto;
+    padding-top: 40px;
+}
+
+.date-main {
+    font-size: 56px;
+    font-weight: 200;
+    letter-spacing: 4px;
+    color: var(--text-primary);
+    text-shadow: 0 2px 15px rgba(0, 0, 0, 0.4);
+    line-height: 1.1;
+}
+
+.date-sub {
+    font-size: 18px;
+    font-weight: 300;
+    letter-spacing: 6px;
+    color: var(--text-secondary);
+    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.4);
+    margin-top: 10px;
+}
+
+/* 诗句 */
+.quote {
+    text-align: center;
+    margin-top: 28px;
+    padding: 0 20px;
+    font-family: 'Zen Kaku Gothic New', 'Noto Sans JP', sans-serif;
+}
+
+.quote p {
+    font-size: 13px;
+    font-weight: 300;
+    letter-spacing: 1.5px;
+    line-height: 2;
+    color: rgba(255, 255, 255, 0.55);
+    text-shadow: 0 1px 10px rgba(0, 0, 0, 0.3);
+    margin: 0;
+}
+
+.quote p:first-child {
+    margin-bottom: 2px;
+}
+
+/* App图标网格 */
+.app-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 28px 20px;
+    justify-items: center;
+    max-width: 320px;
+    margin: 0 auto;
+}
+
+/* App图标 */
+.app-icon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    position: relative;
+    transition: transform 0.2s ease;
+}
+
+.app-icon:hover {
+    transform: scale(1.08);
+}
+
+.app-icon:active {
+    transform: scale(0.92);
+}
+
+.icon-bg {
+    width: var(--icon-size);
+    height: var(--icon-size);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    box-shadow:
+        0 8px 24px rgba(0, 0, 0, 0.4),
+        0 2px 8px rgba(0, 0, 0, 0.3),
+        inset 0 1px 1px rgba(255, 255, 255, 0.25),
+        inset 0 -1px 1px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+/* 玻璃高光效果 */
+.icon-bg::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.3) 0%,
+        rgba(255, 255, 255, 0.1) 50%,
+        transparent 100%
+    );
+    border-radius: 16px 16px 0 0;
+    pointer-events: none;
+}
+
+/* 图标底部光晕 */
+.icon-bg::after {
+    content: '';
+    position: absolute;
+    bottom: -50%;
+    left: 10%;
+    right: 10%;
+    height: 50%;
+    background: inherit;
+    filter: blur(20px);
+    opacity: 0.5;
+    z-index: -1;
+}
+
+.icon-bg svg {
+    width: 28px;
+    height: 28px;
+    color: white;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+    position: relative;
+    z-index: 1;
+}
+
+/* 各App图标颜色 - 淡色系、低饱和度 */
+.player-icon {
+    background: linear-gradient(145deg, #e8b4c0 0%, #d4a0ac 50%, #c08a98 100%);
+}
+
+.messages-icon {
+    background: linear-gradient(145deg, #c8c0dc 0%, #b4aac8 50%, #a094b8 100%);
+}
+
+.diary-icon {
+    background: linear-gradient(145deg, #a8d0d4 0%, #94bcc0 50%, #80a8b0 100%);
+}
+
+.memo-icon {
+    background: linear-gradient(145deg, #c4c4d4 0%, #b0b0c0 50%, #9c9cb0 100%);
+}
+
+.browser-icon {
+    background: linear-gradient(145deg, #b8b8d0 0%, #a4a4bc 50%, #9090a8 100%);
+}
+
+.calendar-icon {
+    background: linear-gradient(145deg, #d4bcc4 0%, #c0a8b0 50%, #ac94a0 100%);
+}
+
+/* App名称 */
+.app-name {
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--text-primary);
+    text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+    letter-spacing: 0.3px;
+}
+
+/* 通知徽章 */
+.notification-badge {
+    position: absolute;
+    top: -4px;
+    right: calc(50% - 36px);
+    min-width: 18px;
+    height: 18px;
+    background: #e53935;
+    color: white;
+    font-size: 11px;
+    font-weight: 600;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 5px;
+    box-shadow: 0 2px 8px rgba(229, 57, 53, 0.5);
+    animation: subtleGlow 3s ease-in-out infinite;
+}
+
+/* 底部横条 */
+.home-bar {
+    position: absolute;
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 134px;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.35);
+    border-radius: 3px;
+    z-index: 200;
+}
+
+/* ========================================
+   App视图
+   ======================================== */
+.app-view {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(12, 15, 22, 0.95);
+    backdrop-filter: blur(40px);
+    -webkit-backdrop-filter: blur(40px);
+    transform: translateY(100%);
+    opacity: 0;
+    transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1),
+                opacity 0.4s ease;
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+}
+
+.app-view.active {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+/* App头部 */
+.app-header {
+    height: calc(var(--status-bar-height) + var(--app-header-height));
+    padding-top: calc(env(safe-area-inset-top, 0) + var(--status-bar-height));
+    display: flex;
+    align-items: center;
+    padding-left: 8px;
+    padding-right: 16px;
+    background: rgba(18, 22, 32, 0.8);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    flex-shrink: 0;
+}
+
+.back-btn {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    transition: background 0.2s ease;
+}
+
+.back-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.back-btn svg {
+    width: 24px;
+    height: 24px;
+    color: var(--text-primary);
+}
+
+.app-title {
+    font-size: 17px;
+    font-weight: 600;
+    margin-left: 4px;
+    letter-spacing: 0.5px;
+}
+
+/* App内容区 */
+.app-content {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 16px;
+    padding-bottom: calc(env(safe-area-inset-bottom, 0) + var(--home-bar-height) + 16px);
+}
+
+/* App占位内容 */
+.app-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--text-muted);
+    text-align: center;
+    padding: 40px;
+}
+
+.app-placeholder svg {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 16px;
+    opacity: 0.4;
+}
+
+.app-placeholder p {
+    font-size: 14px;
+    line-height: 1.6;
+}

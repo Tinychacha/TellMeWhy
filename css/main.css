@@ -1,0 +1,115 @@
+/* ========================================
+   TELL ME WHY - マツエの携帯
+   全屏沉浸式界面
+   ======================================== */
+
+:root {
+    /* 主色调 - 配合星空壁纸 */
+    --bg-deep: #0a1628;
+    --bg-dark: rgba(10, 22, 40, 0.85);
+    --bg-medium: rgba(20, 40, 70, 0.7);
+    --bg-light: rgba(40, 60, 100, 0.5);
+
+    /* 强调色 */
+    --accent-primary: #5a8fcf;
+    --accent-secondary: #8b6cb0;
+    --accent-glow: rgba(90, 143, 207, 0.4);
+
+    /* 文字色 */
+    --text-primary: #f0f4f8;
+    --text-secondary: #b8c5d4;
+    --text-muted: #7a8fa6;
+
+    /* 玻璃效果 */
+    --glass-bg: rgba(15, 30, 50, 0.6);
+    --glass-bg-light: rgba(255, 255, 255, 0.08);
+    --glass-border: rgba(255, 255, 255, 0.12);
+    --shadow-soft: 0 4px 24px rgba(0, 0, 0, 0.3);
+
+    /* App图标色 */
+    --icon-player: linear-gradient(135deg, #c44569 0%, #8b2942 100%);
+    --icon-messages: linear-gradient(135deg, #7c6ba7 0%, #4a3f6b 100%);
+    --icon-diary: linear-gradient(135deg, #4a7c8c 0%, #2d4a5e 100%);
+    --icon-memo: linear-gradient(135deg, #6b6b8c 0%, #4a4a5e 100%);
+    --icon-browser: linear-gradient(135deg, #5c5880 0%, #3d3a5c 100%);
+    --icon-calendar: linear-gradient(135deg, #8c5a6b 0%, #5e3d4a 100%);
+
+    /* 尺寸 */
+    --status-bar-height: 44px;
+    --home-bar-height: 34px;
+    --app-header-height: 56px;
+    --icon-size: 60px;
+
+    /* 字体 */
+    --font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Reset */
+*, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+body {
+    font-family: var(--font-family);
+    color: var(--text-primary);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+    background: var(--accent-primary);
+    color: white;
+}
+
+/* 滚动条 */
+::-webkit-scrollbar {
+    width: 4px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--glass-border);
+    border-radius: 2px;
+}
+
+/* 动画 */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes subtleGlow {
+    0%, 100% { box-shadow: 0 0 8px var(--accent-glow); }
+    50% { box-shadow: 0 0 16px var(--accent-glow), 0 0 24px var(--accent-glow); }
+}
+
+/* 按钮 */
+button {
+    font-family: inherit;
+    cursor: pointer;
+    border: none;
+    background: none;
+    color: inherit;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+button:active {
+    transform: scale(0.96);
+}
