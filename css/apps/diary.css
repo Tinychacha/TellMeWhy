@@ -3,4 +3,193 @@
    日記
    ======================================== */
 
-/* 日记样式将在后续实现 */
+/* 日记列表容器 */
+.diary-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* 日记条目卡片 */
+.diary-entry {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    padding: 16px 18px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.diary-entry::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 3px;
+    height: 100%;
+    background: linear-gradient(180deg, #a8d0d4 0%, #6ab0b8 100%);
+    opacity: 0.6;
+    transition: opacity 0.25s ease;
+}
+
+.diary-entry:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateX(4px);
+}
+
+.diary-entry:hover::before {
+    opacity: 1;
+}
+
+.diary-entry:active {
+    transform: translateX(4px) scale(0.98);
+}
+
+/* 日记序号 */
+.diary-number {
+    font-size: 11px;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.4);
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+}
+
+/* 日记标题 */
+.diary-title {
+    font-size: 17px;
+    font-weight: 500;
+    color: var(--text-primary);
+    letter-spacing: 1px;
+    line-height: 1.4;
+}
+
+/* 日记预览文字 */
+.diary-preview {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 8px;
+    line-height: 1.6;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* ========================================
+   日记详情页
+   ======================================== */
+.diary-detail {
+    padding: 8px 0;
+}
+
+/* 详情页标题 */
+.diary-detail-header {
+    text-align: center;
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.diary-detail-number {
+    font-size: 12px;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.4);
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+}
+
+.diary-detail-title {
+    font-size: 24px;
+    font-weight: 300;
+    color: var(--text-primary);
+    letter-spacing: 3px;
+}
+
+/* 日记内容 */
+.diary-content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* 每一段落 */
+.diary-paragraph {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+/* 日文文本 */
+.diary-ja {
+    font-size: 15px;
+    font-weight: 400;
+    color: var(--text-primary);
+    line-height: 1.8;
+    letter-spacing: 0.5px;
+}
+
+/* 中文翻译 */
+.diary-zh {
+    font-size: 12px;
+    font-weight: 300;
+    color: rgba(255, 255, 255, 0.45);
+    line-height: 1.6;
+    padding-left: 12px;
+    border-left: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+/* 返回按钮 */
+.diary-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    color: var(--text-secondary);
+    padding: 10px 16px;
+    margin-bottom: 16px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    transition: all 0.2s ease;
+    cursor: pointer;
+    border: none;
+}
+
+.diary-back:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+}
+
+.diary-back svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* 滚动动画 */
+.diary-detail .diary-paragraph {
+    animation: fadeInUp 0.4s ease forwards;
+    opacity: 0;
+}
+
+.diary-detail .diary-paragraph:nth-child(1) { animation-delay: 0.05s; }
+.diary-detail .diary-paragraph:nth-child(2) { animation-delay: 0.1s; }
+.diary-detail .diary-paragraph:nth-child(3) { animation-delay: 0.15s; }
+.diary-detail .diary-paragraph:nth-child(4) { animation-delay: 0.2s; }
+.diary-detail .diary-paragraph:nth-child(5) { animation-delay: 0.25s; }
+.diary-detail .diary-paragraph:nth-child(6) { animation-delay: 0.3s; }
+.diary-detail .diary-paragraph:nth-child(7) { animation-delay: 0.35s; }
+.diary-detail .diary-paragraph:nth-child(8) { animation-delay: 0.4s; }
+.diary-detail .diary-paragraph:nth-child(9) { animation-delay: 0.45s; }
+.diary-detail .diary-paragraph:nth-child(10) { animation-delay: 0.5s; }
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
