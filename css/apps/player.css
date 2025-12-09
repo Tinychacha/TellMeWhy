@@ -12,6 +12,11 @@
     height: 100%;
     position: relative;
     overflow: hidden;
+    /* 抵消 app-content 的 padding，让播放器填满整个区域 */
+    margin: -16px;
+    margin-bottom: calc(-16px - env(safe-area-inset-bottom, 0) - var(--home-bar-height, 0px));
+    width: calc(100% + 32px);
+    height: calc(100% + 32px + env(safe-area-inset-bottom, 0) + var(--home-bar-height, 0px));
 }
 
 /* ========================================
