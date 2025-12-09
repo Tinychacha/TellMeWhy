@@ -10,14 +10,14 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@200;300;400;500;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@300;400&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/main.css?v=2">
-    <link rel="stylesheet" href="css/phone.css?v=2">
-    <link rel="stylesheet" href="css/apps/player.css?v=2">
-    <link rel="stylesheet" href="css/apps/messages.css?v=2">
-    <link rel="stylesheet" href="css/apps/diary.css?v=2">
-    <link rel="stylesheet" href="css/apps/memo.css?v=2">
-    <link rel="stylesheet" href="css/apps/browser.css?v=2">
-    <link rel="stylesheet" href="css/apps/calendar.css?v=2">
+    <link rel="stylesheet" href="css/main.css?v=3">
+    <link rel="stylesheet" href="css/phone.css?v=3">
+    <link rel="stylesheet" href="css/apps/player.css?v=3">
+    <link rel="stylesheet" href="css/apps/messages.css?v=3">
+    <link rel="stylesheet" href="css/apps/diary.css?v=3">
+    <link rel="stylesheet" href="css/apps/memo.css?v=3">
+    <link rel="stylesheet" href="css/apps/browser.css?v=3">
+    <link rel="stylesheet" href="css/apps/calendar.css?v=3">
 </head>
 <body>
     <div class="phone-container">
@@ -846,17 +846,29 @@
             }
         }
 
-        // 播放/暂停
+        // 播放/暂停 - iOS Safari 兼容
         function togglePlayerPlay() {
+            if (!currentTrack) return;
+
             if (isPlaying) {
                 audio.pause();
-                isPlaying = false;
             } else {
-                audio.play().catch(() => {});
-                isPlaying = true;
+                // iOS Safari 需要在用户交互中直接调用 play()
+                // 并正确处理 Promise
+                const playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        console.log('[Audio] Play started successfully');
+                    }).catch((error) => {
+                        console.error('[Audio] Play failed:', error.name, error.message);
+                        // 如果是 NotAllowedError，可能需要用户再次点击
+                        if (error.name === 'NotAllowedError') {
+                            alert('请点击播放按钮开始播放');
+                        }
+                    });
+                }
             }
-            updatePlayerPlayButton();
-            updatePlayerViewState();
+            // 注意：实际的 isPlaying 状态由 play/pause 事件处理
         }
 
         function updatePlayerPlayButton() {
