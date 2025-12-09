@@ -12,7 +12,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@300;400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/main.css?v=7">
     <link rel="stylesheet" href="css/phone.css?v=7">
-    <link rel="stylesheet" href="css/apps/player.css?v=12">
+    <link rel="stylesheet" href="css/apps/player.css?v=13">
     <link rel="stylesheet" href="css/apps/messages.css?v=7">
     <link rel="stylesheet" href="css/apps/diary.css?v=7">
     <link rel="stylesheet" href="css/apps/memo.css?v=7">
@@ -281,6 +281,11 @@
         <button class="player-mini-play" id="player-mini-play" onclick="toggleMiniPlay(event)">
             <svg viewBox="0 0 24 24" fill="currentColor" id="player-mini-play-icon">
                 <path d="M8 5v14l11-7z"/>
+            </svg>
+        </button>
+        <button class="player-mini-close" onclick="closeMiniPlayer(event)">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
             </svg>
         </button>
         <div class="player-mini-progress">
@@ -1413,6 +1418,16 @@
                     document.getElementById('player-total-time').textContent = formatTime(audio.duration);
                 }
             }, 100);
+        }
+
+        function closeMiniPlayer(event) {
+            event.stopPropagation();
+            // 停止播放并重置
+            audio.pause();
+            audio.currentTime = 0;
+            currentTrack = null;
+            isPlaying = false;
+            hideMiniPlayer();
         }
 
         function toggleMiniPlay(event) {
