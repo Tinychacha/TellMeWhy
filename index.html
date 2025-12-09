@@ -792,45 +792,26 @@
                 totalTimeEl.textContent = track.duration;
             }
 
-            // 显示播放视图（先显示，让用户知道正在加载）
+            // 显示播放视图
             showPlayerView();
 
-            // iOS Safari 对 GitHub Releases 的重定向有问题
-            // 使用 fetch + blob URL 方案绕过
-            try {
-                console.log('[Audio] Fetching audio via blob method...');
-                const response = await fetch(track.audioFile);
-                if (!response.ok) throw new Error('Fetch failed: ' + response.status);
-                const blob = await response.blob();
-                const blobUrl = URL.createObjectURL(blob);
+            // 加载并播放音频
+            audio.src = track.audioFile;
+            audio.load();
 
-                // 释放旧的 blob URL
-                if (audio.src && audio.src.startsWith('blob:')) {
-                    URL.revokeObjectURL(audio.src);
-                }
-
-                audio.src = blobUrl;
-                console.log('[Audio] Blob URL created, attempting to play...');
-
-                // 播放
-                const playPromise = audio.play();
-                if (playPromise !== undefined) {
-                    playPromise.then(() => {
-                        console.log('[Audio] Play started successfully');
-                        // 恢复进度
-                        const saved = getPlayerProgress(track.id);
-                        if (saved && saved.time > 10) {
-                            audio.currentTime = saved.time;
-                        }
-                    }).catch((error) => {
-                        console.error('[Audio] Play failed:', error.name, error.message);
-                    });
-                }
-            } catch (error) {
-                console.error('[Audio] Blob fetch failed:', error);
-                // 回退到直接 URL 方式
-                audio.src = track.audioFile;
-                audio.load();
+            // 播放
+            const playPromise = audio.play();
+            if (playPromise !== undefined) {
+                playPromise.then(() => {
+                    console.log('[Audio] Play started successfully');
+                    // 恢复进度
+                    const saved = getPlayerProgress(track.id);
+                    if (saved && saved.time > 10) {
+                        audio.currentTime = saved.time;
+                    }
+                }).catch((error) => {
+                    console.error('[Audio] Play failed:', error.name, error.message);
+                });
             }
 
             // 更新曲目列表中的播放状态

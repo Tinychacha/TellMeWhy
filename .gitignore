@@ -207,6 +207,7 @@ marimo/_lsp/
 __marimo__/
 
 # Large files (hosted on GitHub Releases)
-audios/*.mp3
+# Only 06.mp3 exceeds Cloudflare 25MB limit
+audios/06.mp3
 Graph/BK/ブックレットデータ.pdf
 Graph/BK/小头像.png
