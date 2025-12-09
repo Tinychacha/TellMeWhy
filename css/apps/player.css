@@ -1074,6 +1074,44 @@
 /* ========================================
    响应式适配
    ======================================== */
+
+/* 手机端布局优化 - 字幕与封面完全分离 */
+@media (max-width: 768px) {
+    .player-now-cover-area {
+        flex: 0 0 auto;
+        padding: 15px 20px 10px;
+        justify-content: flex-start;
+    }
+
+    .player-now-cover-img {
+        width: min(240px, 50vw);
+        height: auto;
+        max-height: min(240px, 50vw);
+    }
+
+    .player-subtitle-area {
+        flex: 1;
+        min-height: 100px;
+        padding: 16px 20px;
+        justify-content: flex-start;
+        padding-top: 24px;
+        margin-top: 8px;
+    }
+
+    .player-subtitle-speaker-wrapper {
+        margin-bottom: 10px;
+    }
+
+    .player-speaker-avatar {
+        width: 32px;
+        height: 32px;
+    }
+
+    .player-controls-area {
+        flex-shrink: 0;
+    }
+}
+
 @media (max-width: 380px) {
     .player-now-cover-img {
         width: min(220px, 60vw);
