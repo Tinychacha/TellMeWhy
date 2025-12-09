@@ -436,8 +436,9 @@
 
 .player-cover-reflection img {
     width: 100%;
-    height: auto;
+    height: min(280px, 55vw);
     object-fit: cover;
+    object-position: top;
 }
 
 .player-now-view.playing .player-now-cover-img {
@@ -597,12 +598,19 @@
     border-radius: 3px;
     cursor: pointer;
     overflow: visible;
+    /* 增加触摸区域 */
+    padding: 12px 0;
+    margin: -12px 0;
+    box-sizing: content-box;
+    background-clip: content-box;
+    touch-action: none;
 }
 
-.player-progress-bar:hover {
+.player-progress-bar:hover,
+.player-progress-bar.dragging {
     height: 8px;
-    margin-top: -1px;
-    margin-bottom: -1px;
+    margin-top: -13px;
+    margin-bottom: -13px;
 }
 
 .player-progress-fill {

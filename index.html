@@ -680,7 +680,7 @@
                         </div>
                         <div class="player-controls-area">
                             <div class="player-progress-container">
-                                <div class="player-progress-bar" id="player-progress-bar" onclick="seekToPosition(event)" onmousemove="showTimeTooltip(event)" onmouseleave="hideTimeTooltip()">
+                                <div class="player-progress-bar" id="player-progress-bar" onclick="seekToPosition(event)" onmousemove="showTimeTooltip(event)" onmouseleave="hideTimeTooltip()" ontouchstart="handleProgressTouchStart(event)" ontouchmove="handleProgressTouchMove(event)" ontouchend="handleProgressTouchEnd(event)">
                                     <div class="player-time-tooltip" id="player-time-tooltip">00:00</div>
                                     <div class="player-progress-fill" id="player-progress-fill">
                                         <div class="player-progress-handle"></div>
@@ -786,14 +786,47 @@
             // 清空字幕
             clearPlayerSubtitle();
 
-            // 加载音频
+            // 加载音频 - 移动端兼容处理
+            audio.preload = 'auto';
             audio.src = track.audioFile;
+
+            // 添加 crossOrigin 以支持 GitHub Releases
+            audio.crossOrigin = 'anonymous';
+
+            // 使用 Promise 包装加载过程
+            const loadPromise = new Promise((resolve, reject) => {
+                const onCanPlay = () => {
+                    audio.removeEventListener('canplay', onCanPlay);
+                    audio.removeEventListener('error', onError);
+                    resolve();
+                };
+                const onError = (e) => {
+                    audio.removeEventListener('canplay', onCanPlay);
+                    audio.removeEventListener('error', onError);
+                    console.error('Audio load error:', e);
+                    reject(e);
+                };
+                audio.addEventListener('canplay', onCanPlay);
+                audio.addEventListener('error', onError);
+            });
+
             audio.load();
 
-            // 恢复进度
-            const saved = getPlayerProgress(track.id);
-            if (saved && saved.time > 10) {
-                audio.currentTime = saved.time;
+            try {
+                await loadPromise;
+                // 恢复进度
+                const saved = getPlayerProgress(track.id);
+                if (saved && saved.time > 10) {
+                    audio.currentTime = saved.time;
+                }
+                // 更新总时长显示
+                document.getElementById('player-total-time').textContent = formatTime(audio.duration);
+            } catch (e) {
+                console.error('Failed to load audio:', track.audioFile);
+                // 尝试不使用 crossOrigin
+                audio.crossOrigin = null;
+                audio.src = track.audioFile;
+                audio.load();
             }
 
             // 显示播放视图
@@ -870,6 +903,52 @@
             const bar = e.currentTarget;
             const rect = bar.getBoundingClientRect();
             const percent = (e.clientX - rect.left) / rect.width;
+            audio.currentTime = percent * (audio.duration || 0);
+        }
+
+        // 触摸进度条处理（移动端）
+        let isTouchingProgress = false;
+        function handleProgressTouchStart(e) {
+            e.preventDefault();
+            isTouchingProgress = true;
+            const bar = document.getElementById('player-progress-bar');
+            bar.classList.add('dragging');
+            handleProgressTouchMove(e);
+        }
+
+        function handleProgressTouchMove(e) {
+            if (!isTouchingProgress) return;
+            e.preventDefault();
+            const bar = document.getElementById('player-progress-bar');
+            const rect = bar.getBoundingClientRect();
+            const touch = e.touches[0];
+            let percent = (touch.clientX - rect.left) / rect.width;
+            percent = Math.max(0, Math.min(1, percent));
+
+            // 更新进度条显示
+            const fill = document.getElementById('player-progress-fill');
+            fill.style.width = (percent * 100) + '%';
+
+            // 更新时间显示
+            const time = percent * (audio.duration || 0);
+            document.getElementById('player-current-time').textContent = formatTime(time);
+
+            // 显示时间提示
+            const tooltip = document.getElementById('player-time-tooltip');
+            tooltip.textContent = formatTime(time);
+            tooltip.style.left = (percent * 100) + '%';
+        }
+
+        function handleProgressTouchEnd(e) {
+            if (!isTouchingProgress) return;
+            isTouchingProgress = false;
+            const bar = document.getElementById('player-progress-bar');
+            bar.classList.remove('dragging');
+
+            // 跳转到对应位置
+            const rect = bar.getBoundingClientRect();
+            const fill = document.getElementById('player-progress-fill');
+            const percent = parseFloat(fill.style.width) / 100;
             audio.currentTime = percent * (audio.duration || 0);
         }
 
