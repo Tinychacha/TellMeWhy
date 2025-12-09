@@ -399,13 +399,17 @@
 .player-now-cover-wrapper {
     position: relative;
     z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .player-now-cover-img {
     width: min(280px, 55vw);
     height: min(280px, 55vw);
     border-radius: 16px;
-    object-fit: cover;
+    object-fit: contain;
+    object-position: center;
     box-shadow:
         0 24px 60px rgba(0, 0, 0, 0.6),
         0 8px 20px rgba(0, 0, 0, 0.4),
@@ -413,6 +417,7 @@
     position: relative;
     z-index: 2;
     transition: transform 0.3s ease;
+    background: rgba(0, 0, 0, 0.2);
 }
 
 /* 封面倒影效果 - 增强版 */
@@ -422,23 +427,23 @@
     left: 50%;
     transform: translateX(-50%) scaleY(-1);
     width: min(280px, 55vw);
-    height: min(100px, 20vw);
+    height: min(80px, 16vw);
     border-radius: 16px;
     overflow: hidden;
     z-index: 1;
     pointer-events: none;
-    -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.15) 40%, transparent 100%);
-    mask-image: linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.15) 40%, transparent 100%);
-    filter: blur(1px) saturate(0.8);
-    margin-top: 12px;
-    opacity: 0.7;
+    -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.1) 50%, transparent 100%);
+    mask-image: linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.1) 50%, transparent 100%);
+    filter: blur(2px) saturate(0.7);
+    margin-top: 8px;
+    opacity: 0.6;
 }
 
 .player-cover-reflection img {
     width: 100%;
     height: min(280px, 55vw);
-    object-fit: cover;
-    object-position: top;
+    object-fit: contain;
+    object-position: center bottom;
 }
 
 .player-now-view.playing .player-now-cover-img {

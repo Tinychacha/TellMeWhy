@@ -786,27 +786,45 @@
             // 清空字幕
             clearPlayerSubtitle();
 
-            // 加载音频 - 移动端兼容处理
-            audio.preload = 'auto';
+            // 加载音频 - iOS Safari 兼容处理
+            // 注意：iOS Safari 不支持某些 crossOrigin 设置，需要特殊处理
+            audio.preload = 'metadata';  // iOS 上使用 metadata 更可靠
+
+            // 检测是否为 iOS
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+
+            // iOS 不使用 crossOrigin（可能导致 CORS 问题）
+            if (!isIOS) {
+                audio.crossOrigin = 'anonymous';
+            } else {
+                audio.crossOrigin = null;
+            }
+
             audio.src = track.audioFile;
 
-            // 添加 crossOrigin 以支持 GitHub Releases
-            audio.crossOrigin = 'anonymous';
-
-            // 使用 Promise 包装加载过程
+            // 使用 loadedmetadata 事件（比 canplay 更早触发，iOS 更可靠）
             const loadPromise = new Promise((resolve, reject) => {
-                const onCanPlay = () => {
-                    audio.removeEventListener('canplay', onCanPlay);
-                    audio.removeEventListener('error', onError);
+                const timeout = setTimeout(() => {
+                    cleanup();
+                    reject(new Error('Load timeout'));
+                }, 15000); // 15秒超时
+
+                const onLoadedMetadata = () => {
+                    cleanup();
                     resolve();
                 };
                 const onError = (e) => {
-                    audio.removeEventListener('canplay', onCanPlay);
-                    audio.removeEventListener('error', onError);
+                    cleanup();
                     console.error('Audio load error:', e);
                     reject(e);
                 };
-                audio.addEventListener('canplay', onCanPlay);
+                const cleanup = () => {
+                    clearTimeout(timeout);
+                    audio.removeEventListener('loadedmetadata', onLoadedMetadata);
+                    audio.removeEventListener('error', onError);
+                };
+
+                audio.addEventListener('loadedmetadata', onLoadedMetadata);
                 audio.addEventListener('error', onError);
             });
 
@@ -820,13 +838,14 @@
                     audio.currentTime = saved.time;
                 }
                 // 更新总时长显示
-                document.getElementById('player-total-time').textContent = formatTime(audio.duration);
+                if (audio.duration && isFinite(audio.duration)) {
+                    document.getElementById('player-total-time').textContent = formatTime(audio.duration);
+                }
             } catch (e) {
-                console.error('Failed to load audio:', track.audioFile);
-                // 尝试不使用 crossOrigin
+                console.error('Failed to load audio:', track.audioFile, e);
+                // 备用方案：直接设置 src，不等待加载完成
                 audio.crossOrigin = null;
                 audio.src = track.audioFile;
-                audio.load();
             }
 
             // 显示播放视图
@@ -1298,7 +1317,17 @@
 
         audio.addEventListener('loadedmetadata', () => {
             const totalTimeEl = document.getElementById('player-total-time');
-            if (totalTimeEl) totalTimeEl.textContent = formatTime(audio.duration);
+            if (totalTimeEl && audio.duration && isFinite(audio.duration)) {
+                totalTimeEl.textContent = formatTime(audio.duration);
+            }
+        });
+
+        // iOS Safari 备用：durationchange 事件
+        audio.addEventListener('durationchange', () => {
+            const totalTimeEl = document.getElementById('player-total-time');
+            if (totalTimeEl && audio.duration && isFinite(audio.duration)) {
+                totalTimeEl.textContent = formatTime(audio.duration);
+            }
         });
 
         audio.addEventListener('ended', () => {
