@@ -10,14 +10,14 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@200;300;400;500;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@300;400&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/main.css">
-    <link rel="stylesheet" href="css/phone.css">
-    <link rel="stylesheet" href="css/apps/player.css">
-    <link rel="stylesheet" href="css/apps/messages.css">
-    <link rel="stylesheet" href="css/apps/diary.css">
-    <link rel="stylesheet" href="css/apps/memo.css">
-    <link rel="stylesheet" href="css/apps/browser.css">
-    <link rel="stylesheet" href="css/apps/calendar.css">
+    <link rel="stylesheet" href="css/main.css?v=2">
+    <link rel="stylesheet" href="css/phone.css?v=2">
+    <link rel="stylesheet" href="css/apps/player.css?v=2">
+    <link rel="stylesheet" href="css/apps/messages.css?v=2">
+    <link rel="stylesheet" href="css/apps/diary.css?v=2">
+    <link rel="stylesheet" href="css/apps/memo.css?v=2">
+    <link rel="stylesheet" href="css/apps/browser.css?v=2">
+    <link rel="stylesheet" href="css/apps/calendar.css?v=2">
 </head>
 <body>
     <div class="phone-container">
@@ -786,66 +786,34 @@
             // 清空字幕
             clearPlayerSubtitle();
 
-            // 加载音频 - iOS Safari 兼容处理
-            // 注意：iOS Safari 不支持某些 crossOrigin 设置，需要特殊处理
-            audio.preload = 'metadata';  // iOS 上使用 metadata 更可靠
-
-            // 检测是否为 iOS
-            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-
-            // iOS 不使用 crossOrigin（可能导致 CORS 问题）
-            if (!isIOS) {
-                audio.crossOrigin = 'anonymous';
-            } else {
-                audio.crossOrigin = null;
-            }
-
+            // 加载音频 - iOS Safari 完全兼容方案
+            // iOS Safari 对跨域音频有严格限制，不使用 crossOrigin
+            // 直接设置 src，不等待 Promise（iOS 需要用户交互后才能获取 duration）
+            audio.removeAttribute('crossOrigin');
+            audio.preload = 'auto';
             audio.src = track.audioFile;
 
-            // 使用 loadedmetadata 事件（比 canplay 更早触发，iOS 更可靠）
-            const loadPromise = new Promise((resolve, reject) => {
-                const timeout = setTimeout(() => {
-                    cleanup();
-                    reject(new Error('Load timeout'));
-                }, 15000); // 15秒超时
+            // 使用 tracks.json 中的 duration 作为显示值（不依赖音频元数据）
+            const totalTimeEl = document.getElementById('player-total-time');
+            if (totalTimeEl && track.duration) {
+                totalTimeEl.textContent = track.duration;
+            }
 
-                const onLoadedMetadata = () => {
-                    cleanup();
-                    resolve();
-                };
-                const onError = (e) => {
-                    cleanup();
-                    console.error('Audio load error:', e);
-                    reject(e);
-                };
-                const cleanup = () => {
-                    clearTimeout(timeout);
-                    audio.removeEventListener('loadedmetadata', onLoadedMetadata);
-                    audio.removeEventListener('error', onError);
-                };
-
-                audio.addEventListener('loadedmetadata', onLoadedMetadata);
-                audio.addEventListener('error', onError);
-            });
-
+            // 尝试加载音频（非阻塞）
             audio.load();
 
-            try {
-                await loadPromise;
-                // 恢复进度
-                const saved = getPlayerProgress(track.id);
-                if (saved && saved.time > 10) {
-                    audio.currentTime = saved.time;
-                }
-                // 更新总时长显示
-                if (audio.duration && isFinite(audio.duration)) {
-                    document.getElementById('player-total-time').textContent = formatTime(audio.duration);
-                }
-            } catch (e) {
-                console.error('Failed to load audio:', track.audioFile, e);
-                // 备用方案：直接设置 src，不等待加载完成
-                audio.crossOrigin = null;
-                audio.src = track.audioFile;
+            // 恢复进度（如果有）
+            const saved = getPlayerProgress(track.id);
+            if (saved && saved.time > 10) {
+                // 延迟设置 currentTime，等待音频部分加载
+                const tryRestoreProgress = () => {
+                    if (audio.readyState >= 1) {
+                        audio.currentTime = saved.time;
+                    } else {
+                        setTimeout(tryRestoreProgress, 100);
+                    }
+                };
+                tryRestoreProgress();
             }
 
             // 显示播放视图
@@ -1315,11 +1283,13 @@
             updateMiniPlayerProgress();
         });
 
+        // 音频元数据加载后更新时长（如果比 tracks.json 更准确）
         audio.addEventListener('loadedmetadata', () => {
             const totalTimeEl = document.getElementById('player-total-time');
             if (totalTimeEl && audio.duration && isFinite(audio.duration)) {
                 totalTimeEl.textContent = formatTime(audio.duration);
             }
+            console.log('[Audio] loadedmetadata - duration:', audio.duration);
         });
 
         // iOS Safari 备用：durationchange 事件
@@ -1328,6 +1298,17 @@
             if (totalTimeEl && audio.duration && isFinite(audio.duration)) {
                 totalTimeEl.textContent = formatTime(audio.duration);
             }
+            console.log('[Audio] durationchange - duration:', audio.duration);
+        });
+
+        // canplay 事件 - 音频可以开始播放
+        audio.addEventListener('canplay', () => {
+            console.log('[Audio] canplay - ready to play');
+        });
+
+        // 错误处理
+        audio.addEventListener('error', (e) => {
+            console.error('[Audio] Error:', audio.error?.code, audio.error?.message);
         });
 
         audio.addEventListener('ended', () => {
