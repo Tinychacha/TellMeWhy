@@ -7,16 +7,16 @@
    播放器主容器
    ======================================== */
 .player-app {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     display: flex;
     flex-direction: column;
-    height: 100%;
-    position: relative;
     overflow: hidden;
-    /* 抵消 app-content 的 padding，让播放器填满整个区域 */
-    margin: -16px;
-    margin-bottom: calc(-16px - env(safe-area-inset-bottom, 0) - var(--home-bar-height, 0px));
-    width: calc(100% + 32px);
-    height: calc(100% + 32px + env(safe-area-inset-bottom, 0) + var(--home-bar-height, 0px));
+    background: var(--bg-primary);
+    z-index: 50;
 }
 
 /* ========================================
