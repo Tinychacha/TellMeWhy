@@ -1,0 +1,399 @@
+/* ========================================
+   免责声明和密码验证页面样式
+   ======================================== */
+
+/* 通用覆盖层样式 */
+.disclaimer-overlay,
+.password-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg,
+        #0a0812 0%,
+        #1a1525 30%,
+        #15101f 70%,
+        #0a0812 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    opacity: 1;
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+/* 星空背景 */
+.disclaimer-overlay::before,
+.password-overlay::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image:
+        radial-gradient(2px 2px at 20px 30px, rgba(255,255,255,0.3), transparent),
+        radial-gradient(2px 2px at 40px 70px, rgba(255,255,255,0.2), transparent),
+        radial-gradient(1px 1px at 90px 40px, rgba(255,255,255,0.4), transparent),
+        radial-gradient(2px 2px at 130px 80px, rgba(255,255,255,0.2), transparent),
+        radial-gradient(1px 1px at 160px 120px, rgba(255,255,255,0.3), transparent),
+        radial-gradient(2px 2px at 200px 50px, rgba(255,255,255,0.2), transparent),
+        radial-gradient(1px 1px at 250px 160px, rgba(255,255,255,0.4), transparent),
+        radial-gradient(2px 2px at 300px 100px, rgba(255,255,255,0.2), transparent),
+        radial-gradient(1px 1px at 350px 200px, rgba(255,255,255,0.3), transparent),
+        radial-gradient(2px 2px at 400px 150px, rgba(255,255,255,0.2), transparent);
+    background-size: 450px 250px;
+    animation: twinkle 4s ease-in-out infinite alternate;
+    pointer-events: none;
+}
+
+@keyframes twinkle {
+    0% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+.disclaimer-overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(1.05);
+}
+
+.password-overlay {
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0.95);
+}
+
+.password-overlay.visible {
+    opacity: 1;
+    pointer-events: auto;
+    transform: scale(1);
+}
+
+.password-overlay.success {
+    opacity: 0;
+    transform: scale(1.1);
+}
+
+/* ========================================
+   免责声明容器
+   ======================================== */
+.disclaimer-container,
+.password-container {
+    max-width: 380px;
+    width: 90%;
+    padding: 32px 24px;
+    background: rgba(20, 15, 30, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    backdrop-filter: blur(20px);
+    box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    animation: fadeInUp 0.6s ease;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ========================================
+   头部样式
+   ======================================== */
+.disclaimer-header,
+.password-header {
+    text-align: center;
+    margin-bottom: 28px;
+}
+
+.disclaimer-icon,
+.password-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
+
+.disclaimer-title,
+.password-title {
+    font-size: 22px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.95);
+    margin: 0 0 8px 0;
+    letter-spacing: 2px;
+}
+
+.disclaimer-subtitle,
+.password-subtitle {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.45);
+    margin: 0;
+    letter-spacing: 1px;
+}
+
+/* ========================================
+   免责声明内容
+   ======================================== */
+.disclaimer-content {
+    margin-bottom: 28px;
+}
+
+.disclaimer-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.disclaimer-item:last-child {
+    border-bottom: none;
+}
+
+.disclaimer-bullet {
+    font-size: 18px;
+    flex-shrink: 0;
+    line-height: 1.4;
+}
+
+.disclaimer-text {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.disclaimer-jp {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.9);
+    line-height: 1.5;
+}
+
+.disclaimer-cn {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.4);
+    line-height: 1.4;
+}
+
+/* ========================================
+   按钮样式
+   ======================================== */
+.disclaimer-btn,
+.password-btn {
+    width: 100%;
+    padding: 14px 24px;
+    background: linear-gradient(135deg,
+        rgba(180, 130, 200, 0.3) 0%,
+        rgba(130, 160, 200, 0.3) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    color: rgba(255, 255, 255, 0.95);
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.disclaimer-btn:hover,
+.password-btn:hover {
+    background: linear-gradient(135deg,
+        rgba(180, 130, 200, 0.5) 0%,
+        rgba(130, 160, 200, 0.5) 100%);
+    border-color: rgba(255, 255, 255, 0.25);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(180, 130, 200, 0.2);
+}
+
+.disclaimer-btn:active,
+.password-btn:active {
+    transform: translateY(0);
+}
+
+.disclaimer-btn-sub,
+.password-btn-sub {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.5);
+    font-weight: 400;
+}
+
+/* ========================================
+   密码页面样式
+   ======================================== */
+.password-hint {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 24px;
+}
+
+.password-hint-title {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.password-hint-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+.hint-jp {
+    font-size: 14px;
+    color: rgba(200, 170, 130, 0.9);
+    font-family: 'Courier New', monospace;
+    letter-spacing: 1px;
+}
+
+.hint-cn {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+/* 密码输入框 */
+.password-input-wrapper {
+    margin-bottom: 20px;
+    position: relative;
+}
+
+.password-input {
+    width: 100%;
+    padding: 14px 18px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    color: rgba(255, 255, 255, 0.95);
+    font-size: 16px;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 2px;
+    text-align: center;
+    outline: none;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+.password-input::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+    font-family: 'Noto Sans JP', sans-serif;
+    letter-spacing: 0;
+}
+
+.password-input:focus {
+    border-color: rgba(180, 130, 200, 0.5);
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 0 20px rgba(180, 130, 200, 0.15);
+}
+
+/* 错误提示 */
+.password-error {
+    position: absolute;
+    bottom: -24px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 12px;
+    color: rgba(220, 100, 100, 0.9);
+    opacity: 0;
+    transform: translateY(-5px);
+    transition: all 0.3s ease;
+}
+
+.password-error.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* 抖动动画 */
+.password-input.shake {
+    animation: shake 0.5s ease;
+    border-color: rgba(220, 100, 100, 0.5);
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-8px); }
+    40% { transform: translateX(8px); }
+    60% { transform: translateX(-8px); }
+    80% { transform: translateX(8px); }
+}
+
+/* 返回按钮 */
+.password-back {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.4);
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.password-back:hover {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+/* ========================================
+   手机容器初始隐藏
+   ======================================== */
+.phone-container {
+    opacity: 0;
+    transform: scale(0.95);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+    pointer-events: none;
+}
+
+.phone-container.visible {
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: auto;
+}
+
+/* ========================================
+   移动端适配
+   ======================================== */
+@media (max-width: 400px) {
+    .disclaimer-container,
+    .password-container {
+        padding: 24px 20px;
+        width: 92%;
+    }
+
+    .disclaimer-title,
+    .password-title {
+        font-size: 20px;
+    }
+
+    .disclaimer-icon,
+    .password-icon {
+        font-size: 40px;
+    }
+
+    .disclaimer-item {
+        padding: 10px 0;
+    }
+
+    .disclaimer-jp {
+        font-size: 12px;
+    }
+
+    .disclaimer-bullet {
+        font-size: 16px;
+    }
+}

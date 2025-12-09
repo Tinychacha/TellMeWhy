@@ -13,13 +13,97 @@
     <link rel="stylesheet" href="css/main.css?v=7">
     <link rel="stylesheet" href="css/phone.css?v=7">
     <link rel="stylesheet" href="css/apps/player.css?v=14">
-    <link rel="stylesheet" href="css/apps/messages.css?v=7">
+    <link rel="stylesheet" href="css/apps/messages.css?v=13">
     <link rel="stylesheet" href="css/apps/diary.css?v=7">
-    <link rel="stylesheet" href="css/apps/memo.css?v=7">
-    <link rel="stylesheet" href="css/apps/browser.css?v=7">
+    <link rel="stylesheet" href="css/apps/memo.css?v=8">
+    <link rel="stylesheet" href="css/apps/browser.css?v=9">
     <link rel="stylesheet" href="css/apps/calendar.css?v=7">
+    <link rel="stylesheet" href="css/auth.css?v=1">
 </head>
 <body>
+    <!-- 免责声明页面 -->
+    <div class="disclaimer-overlay" id="disclaimer-overlay">
+        <div class="disclaimer-container">
+            <div class="disclaimer-header">
+                <div class="disclaimer-icon">📱</div>
+                <h1 class="disclaimer-title">マツエの携帯</h1>
+                <p class="disclaimer-subtitle">ご利用前にお読みください</p>
+            </div>
+
+            <div class="disclaimer-content">
+                <div class="disclaimer-item">
+                    <span class="disclaimer-bullet">🌸</span>
+                    <div class="disclaimer-text">
+                        <span class="disclaimer-jp">本サイトは個人の趣味による二次創作です</span>
+                        <span class="disclaimer-cn">（本站是基于个人爱好的二次创作）</span>
+                    </div>
+                </div>
+
+                <div class="disclaimer-item">
+                    <span class="disclaimer-bullet">📝</span>
+                    <div class="disclaimer-text">
+                        <span class="disclaimer-jp">翻訳は学習・交流目的のみです</span>
+                        <span class="disclaimer-cn">（翻译仅供学习交流使用）</span>
+                    </div>
+                </div>
+
+                <div class="disclaimer-item">
+                    <span class="disclaimer-bullet">🚫</span>
+                    <div class="disclaimer-text">
+                        <span class="disclaimer-jp">いかなる形式での転載・配布を禁止します</span>
+                        <span class="disclaimer-cn">（严禁任何形式的转载和传播）</span>
+                    </div>
+                </div>
+
+                <div class="disclaimer-item">
+                    <span class="disclaimer-bullet">✨</span>
+                    <div class="disclaimer-text">
+                        <span class="disclaimer-jp">二次創作の内容が含まれています</span>
+                        <span class="disclaimer-cn">（内含同人二次创作内容）</span>
+                    </div>
+                </div>
+
+                <div class="disclaimer-item">
+                    <span class="disclaimer-bullet">💭</span>
+                    <div class="disclaimer-text">
+                        <span class="disclaimer-jp">気になる方はプレイヤー以外のアプリをお控えください</span>
+                        <span class="disclaimer-cn">（如介意请勿打开播放器以外的应用）</span>
+                    </div>
+                </div>
+            </div>
+
+            <button class="disclaimer-btn" onclick="showPasswordPage()">
+                <span>同意して続ける</span>
+                <span class="disclaimer-btn-sub">（同意并继续）</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- 密码输入页面 -->
+    <div class="password-overlay" id="password-overlay">
+        <div class="password-container">
+            <div class="password-header">
+                <div class="password-icon">🔐</div>
+                <h1 class="password-title">パスワード入力</h1>
+                <p class="password-subtitle">密码验证</p>
+            </div>
+
+            <div class="password-input-wrapper">
+                <input type="text" class="password-input" id="password-input" placeholder="パスワードを入力..." autocomplete="off">
+                <div class="password-error" id="password-error">パスワードが違います（密码错误）</div>
+            </div>
+
+            <button class="password-btn" onclick="checkPassword()">
+                <span>確認</span>
+                <span class="password-btn-sub">（确认）</span>
+            </button>
+
+            <div class="password-back" onclick="showDisclaimerPage()">
+                ← 戻る（返回）
+            </div>
+        </div>
+    </div>
+
     <div class="phone-container">
         <div class="phone-frame">
             <!-- 壁纸 -->
@@ -298,6 +382,86 @@
         // TELL ME WHY - マツエの携帯
         // ========================================
 
+        // ========================================
+        // 免责声明和密码验证
+        // ========================================
+
+        // 显示密码页面
+        function showPasswordPage() {
+            document.getElementById('disclaimer-overlay').classList.add('hidden');
+            document.getElementById('password-overlay').classList.add('visible');
+            document.getElementById('password-input').focus();
+        }
+
+        // 返回免责声明页面
+        function showDisclaimerPage() {
+            document.getElementById('password-overlay').classList.remove('visible');
+            document.getElementById('disclaimer-overlay').classList.remove('hidden');
+            document.getElementById('password-input').value = '';
+            document.getElementById('password-error').classList.remove('visible');
+        }
+
+        // 生成动态密码
+        function generatePassword() {
+            const now = new Date();
+            const month = now.getMonth() + 1; // 1-12
+            const year = now.getFullYear();
+
+            // 获取本月最后一天
+            const lastDay = new Date(year, month, 0).getDate();
+
+            // 密码规则: tmw + (月份*2+3) + (本月最后一天-7)
+            const part1 = month * 2 + 3;
+            const part2 = lastDay - 7;
+
+            // 月份部分：如果小于10，补零
+            const part1Str = part1 < 10 ? '0' + part1 : String(part1);
+            const part2Str = part2 < 10 ? '0' + part2 : String(part2);
+
+            return 'tmw' + part1Str + part2Str;
+        }
+
+        // 验证密码
+        function checkPassword() {
+            const input = document.getElementById('password-input').value.trim().toLowerCase();
+            const correctPassword = generatePassword();
+
+            if (input === correctPassword) {
+                // 密码正确，显示手机页面
+                document.getElementById('password-overlay').classList.add('success');
+                setTimeout(() => {
+                    document.getElementById('password-overlay').style.display = 'none';
+                    document.querySelector('.phone-container').classList.add('visible');
+                }, 500);
+            } else {
+                // 密码错误，显示错误提示
+                document.getElementById('password-error').classList.add('visible');
+                document.getElementById('password-input').classList.add('shake');
+                setTimeout(() => {
+                    document.getElementById('password-input').classList.remove('shake');
+                }, 500);
+            }
+        }
+
+        // 监听回车键
+        document.addEventListener('DOMContentLoaded', () => {
+            const passwordInput = document.getElementById('password-input');
+            if (passwordInput) {
+                passwordInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        checkPassword();
+                    }
+                });
+                passwordInput.addEventListener('input', () => {
+                    document.getElementById('password-error').classList.remove('visible');
+                });
+            }
+        });
+
+        // ========================================
+        // 应用配置
+        // ========================================
+
         const APP_CONFIG = {
             player: { title: 'プレイヤー' },
             messages: { title: 'メッセージ' },
@@ -317,18 +481,12 @@
                 <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4z"/></svg>
                 <p>日記<br>準備中...</p>
             </div>`,
-            memo: `<div class="app-placeholder">
-                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
-                <p>メモ<br>準備中...</p>
-            </div>`,
+            memo: null, // 备忘录有专门的渲染逻辑
             browser: `<div class="app-placeholder">
                 <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
                 <p>ブラウザ<br>準備中...</p>
             </div>`,
-            calendar: `<div class="app-placeholder">
-                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11zM9 11H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2z"/></svg>
-                <p>カレンダー<br>準備中...</p>
-            </div>`
+            calendar: null // 日历有专门的渲染逻辑
         };
 
         let currentApp = null;
@@ -421,6 +579,18 @@
                     await loadDiaryData();
                 }
                 appContent.innerHTML = renderDiaryList();
+            } else if (appId === 'calendar') {
+                // 日历
+                appContent.innerHTML = renderCalendar();
+            } else if (appId === 'memo') {
+                // 备忘录
+                appContent.innerHTML = renderMemoList();
+            } else if (appId === 'browser') {
+                // 浏览器/搜索历史
+                appContent.innerHTML = renderBrowser();
+            } else if (appId === 'messages') {
+                // 消息
+                appContent.innerHTML = renderChatList();
             } else {
                 appContent.innerHTML = APP_PLACEHOLDERS[appId] || '<div class="app-placeholder"><p>Unknown App</p></div>';
             }
@@ -1521,6 +1691,2066 @@
         function backToDiaryList() {
             diaryViewState = 'list';
             appContent.innerHTML = renderDiaryList();
+        }
+
+        // ========================================
+        // カレンダー App
+        // ========================================
+
+        // 日历状态 - 固定在2022年11月（故事时间）
+        let calendarYear = 2022;
+        let calendarMonth = 11; // 11月
+        let selectedDate = 25; // 默认选中25日
+
+        // 日历事件数据 - 松江的日程
+        // 注意：松江和女主毕业后没有见面，直到11月25日才"重逢"
+        // 所有事件体现松江在暗中的监视、计划和日常警察工作
+        const calendarEvents = {
+            // 2022年10月
+            '2022-10': {
+                1: [
+                    { time: '10:00', title: '高橋さんと巡回', type: 'work' }
+                ],
+                5: [
+                    { time: '14:00', title: '三上と接触', type: 'special', note: '次の段取りを確認' }
+                ],
+                10: [
+                    { time: '終日', title: '彼女の引っ越し日', type: 'special', note: '遠くから見届けた。ついにこの町に' }
+                ],
+                12: [
+                    { time: '18:30', title: '彼女の帰宅ルート確認', type: 'personal', note: '安全な道を把握しておく' }
+                ],
+                15: [
+                    { time: '09:00', title: '派出所勤務', type: 'work' },
+                    { time: '18:00', title: '彼女の職場周辺を巡回', type: 'personal' }
+                ],
+                20: [
+                    { time: '15:00', title: '三上への指示', type: 'special', note: '11月の計画について' }
+                ],
+                25: [
+                    { time: '10:00', title: '高橋さんと防犯講習', type: 'work' }
+                ],
+                28: [
+                    { time: '19:00', title: '彼女の行動パターン記録', type: 'personal', note: '帰宅時間、よく行く店...' }
+                ]
+            },
+            // 2022年11月
+            '2022-11': {
+                1: [
+                    { time: '09:00', title: '派出所勤務', type: 'work' }
+                ],
+                3: [
+                    { time: '祝日', title: '文化の日', type: 'personal', note: '彼女は実家に帰省？' }
+                ],
+                5: [
+                    { time: '14:00', title: '高橋さんと商店街巡回', type: 'work' },
+                    { time: '20:00', title: '三上と最終確認', type: 'special', note: '25日の手筈' }
+                ],
+                8: [
+                    { time: '18:00', title: '彼女の帰宅を見届ける', type: 'personal', note: '今日も無事' }
+                ],
+                10: [
+                    { time: '10:00', title: '署での会議', type: 'work' }
+                ],
+                12: [
+                    { time: '15:00', title: '防犯カメラ位置の確認', type: 'personal', note: '25日のルート上' }
+                ],
+                15: [
+                    { time: '09:00', title: '派出所勤務', type: 'work' },
+                    { time: '19:00', title: '彼女を遠くから', type: 'personal', note: '友達と食事してた。楽しそうだった' }
+                ],
+                18: [
+                    { time: '14:00', title: '高橋さんと子供の見守り', type: 'work' }
+                ],
+                20: [
+                    { time: '10:00', title: '派出所勤務', type: 'work' },
+                    { time: '21:00', title: '三上に連絡', type: 'special', note: '準備は整った' }
+                ],
+                23: [
+                    { time: '祝日', title: '勤労感謝の日', type: 'personal', note: '彼女は休み。部屋にいるみたい' }
+                ],
+                24: [
+                    { time: '終日', title: '最終準備', type: 'special', note: '明日、すべてが始まる' }
+                ],
+                25: [
+                    { time: '08:00', title: '朝の巡回', type: 'work' },
+                    { time: '19:30', title: '運命の夜', type: 'special', note: '彼女を守る。何があっても。' }
+                ],
+                28: [
+                    { time: '15:00', title: '署への報告書提出', type: 'work', note: '暴漢撃退の件' }
+                ],
+                30: [
+                    { time: '10:00', title: '高橋さんと巡回', type: 'work' }
+                ]
+            },
+            // 2022年12月
+            '2022-12': {
+                1: [
+                    { time: '09:00', title: '派出所勤務', type: 'work' }
+                ],
+                3: [
+                    { time: '18:00', title: '彼女の様子を確認', type: 'personal', note: 'まだ怯えてる...' }
+                ],
+                5: [
+                    { time: '14:00', title: '高橋さんと防犯パトロール', type: 'work' }
+                ],
+                10: [
+                    { time: '10:00', title: '署での表彰式', type: 'work', note: '市民を守った功績で' }
+                ]
+            }
+        };
+
+        // 日语星期
+        const weekdaysJP = ['日', '月', '火', '水', '木', '金', '土'];
+        const weekdaysFullJP = ['日曜日', '月曜日', '火曜日', '水曜日', '木曜日', '金曜日', '土曜日'];
+
+        // 获取某月的天数
+        function getDaysInMonth(year, month) {
+            return new Date(year, month, 0).getDate();
+        }
+
+        // 获取某月第一天是星期几
+        function getFirstDayOfMonth(year, month) {
+            return new Date(year, month - 1, 1).getDay();
+        }
+
+        // 获取某天的事件
+        function getEventsForDate(year, month, day) {
+            const key = `${year}-${month}`;
+            return calendarEvents[key]?.[day] || [];
+        }
+
+        // 检查是否有事件
+        function hasEvents(year, month, day) {
+            return getEventsForDate(year, month, day).length > 0;
+        }
+
+        // 渲染日历
+        function renderCalendar() {
+            const daysInMonth = getDaysInMonth(calendarYear, calendarMonth);
+            const firstDay = getFirstDayOfMonth(calendarYear, calendarMonth);
+            const prevMonthDays = getDaysInMonth(calendarYear, calendarMonth - 1);
+
+            // 计算需要显示的上月天数
+            const prevDays = firstDay;
+            // 固定42个格子（6行×7列）避免布局跳动
+            const totalCells = 42;
+            const nextDays = totalCells - prevDays - daysInMonth;
+
+            let daysHtml = '';
+
+            // 上个月的日期
+            for (let i = prevDays - 1; i >= 0; i--) {
+                const day = prevMonthDays - i;
+                const dayOfWeek = (firstDay - i - 1 + 7) % 7;
+                const weekClass = dayOfWeek === 0 ? 'sunday' : (dayOfWeek === 6 ? 'saturday' : '');
+                const hasEvent = hasEvents(calendarYear, calendarMonth - 1, day);
+                daysHtml += `
+                    <button class="calendar-day other-month ${weekClass} ${hasEvent ? 'has-event' : ''}"
+                            data-year="${calendarYear}" data-month="${calendarMonth - 1}" data-day="${day}"
+                            onclick="selectCalendarDate(${calendarYear}, ${calendarMonth - 1}, ${day})">
+                        <span class="calendar-day-num">${day}</span>
+                    </button>
+                `;
+            }
+
+            // 当前月的日期
+            for (let day = 1; day <= daysInMonth; day++) {
+                const date = new Date(calendarYear, calendarMonth - 1, day);
+                const dayOfWeek = date.getDay();
+                const weekClass = dayOfWeek === 0 ? 'sunday' : (dayOfWeek === 6 ? 'saturday' : '');
+                const isToday = calendarYear === 2022 && calendarMonth === 11 && day === 25;
+                const isSelected = day === selectedDate;
+                const hasEvent = hasEvents(calendarYear, calendarMonth, day);
+                const isImportant = (calendarYear === 2022 && calendarMonth === 11 && day === 25) ||
+                                    (calendarYear === 2022 && calendarMonth === 11 && day === 24) ||
+                                    (calendarYear === 2022 && calendarMonth === 10 && day === 10);
+
+                daysHtml += `
+                    <button class="calendar-day ${weekClass} ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''} ${hasEvent ? 'has-event' : ''} ${isImportant ? 'important' : ''}"
+                            data-year="${calendarYear}" data-month="${calendarMonth}" data-day="${day}"
+                            onclick="selectCalendarDate(${calendarYear}, ${calendarMonth}, ${day})">
+                        <span class="calendar-day-num">${day}</span>
+                    </button>
+                `;
+            }
+
+            // 下个月的日期
+            for (let i = 1; i <= nextDays; i++) {
+                const dayOfWeek = (firstDay + daysInMonth + i - 1) % 7;
+                const weekClass = dayOfWeek === 0 ? 'sunday' : (dayOfWeek === 6 ? 'saturday' : '');
+                const hasEvent = hasEvents(calendarYear, calendarMonth + 1, i);
+                daysHtml += `
+                    <button class="calendar-day other-month ${weekClass} ${hasEvent ? 'has-event' : ''}"
+                            data-year="${calendarYear}" data-month="${calendarMonth + 1}" data-day="${i}"
+                            onclick="selectCalendarDate(${calendarYear}, ${calendarMonth + 1}, ${i})">
+                        <span class="calendar-day-num">${i}</span>
+                    </button>
+                `;
+            }
+
+            // 渲染选中日期的事件
+            const events = getEventsForDate(calendarYear, calendarMonth, selectedDate);
+            const selectedDateObj = new Date(calendarYear, calendarMonth - 1, selectedDate);
+            const weekdayFull = weekdaysFullJP[selectedDateObj.getDay()];
+
+            let eventsHtml = '';
+            if (events.length > 0) {
+                eventsHtml = events.map(event => `
+                    <div class="calendar-event-item ${event.type}">
+                        <div class="calendar-event-time">${event.time}</div>
+                        <div class="calendar-event-content">
+                            <div class="calendar-event-title">${event.title}</div>
+                            ${event.note ? `<div class="calendar-event-note">${event.note}</div>` : ''}
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                eventsHtml = '<div class="calendar-no-events">予定はありません</div>';
+            }
+
+            return `
+                <div class="calendar-app">
+                    <div class="calendar-header">
+                        <div class="calendar-title">
+                            <div class="calendar-year">${calendarYear}年</div>
+                            <div class="calendar-month">${calendarMonth}月</div>
+                        </div>
+                        <div class="calendar-nav">
+                            <button class="calendar-nav-btn" onclick="changeCalendarMonth(-1)">
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+                                </svg>
+                            </button>
+                            <button class="calendar-nav-btn" onclick="changeCalendarMonth(1)">
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="calendar-weekdays">
+                        ${weekdaysJP.map((day, i) => `
+                            <div class="calendar-weekday ${i === 0 ? 'sunday' : ''} ${i === 6 ? 'saturday' : ''}">${day}</div>
+                        `).join('')}
+                    </div>
+                    <div class="calendar-days">
+                        ${daysHtml}
+                    </div>
+                    <div class="calendar-events">
+                        <div class="calendar-events-header">
+                            <span class="calendar-events-date">${calendarMonth}月${selectedDate}日</span>
+                            <span class="calendar-events-weekday">${weekdayFull}</span>
+                        </div>
+                        ${eventsHtml}
+                    </div>
+                </div>
+            `;
+        }
+
+        // 切换月份
+        function changeCalendarMonth(delta) {
+            calendarMonth += delta;
+            if (calendarMonth > 12) {
+                calendarMonth = 1;
+                calendarYear++;
+            } else if (calendarMonth < 1) {
+                calendarMonth = 12;
+                calendarYear--;
+            }
+            // 重置选中日期为1号
+            selectedDate = 1;
+            appContent.innerHTML = renderCalendar();
+        }
+
+        // 选择日期
+        function selectCalendarDate(year, month, day) {
+            // 如果点击的是其他月份，切换到那个月
+            if (month !== calendarMonth || year !== calendarYear) {
+                calendarYear = year;
+                calendarMonth = month;
+            }
+            selectedDate = day;
+            appContent.innerHTML = renderCalendar();
+        }
+
+        // ========================================
+        // メモ App
+        // ========================================
+
+        // 备忘录状态
+        let memoViewState = 'list'; // 'list' 或 'detail'
+        let currentMemoId = null;
+
+        // 备忘录数据
+        const memoData = [
+            {
+                id: 1,
+                title: 'やることリスト（██町赴任前）',
+                date: '2022.09.15',
+                type: 'important',
+                content: `
+                    <ul>
+                        <li class="checked">異動届提出</li>
+                        <li class="checked">██町の地図を頭に入れる</li>
+                        <li class="checked">住民の名前と顔を覚える</li>
+                        <li class="checked">高橋さんに挨拶<span class="memo-highlight">（柔道黒帯、顔が広い、味方につけると有利）</span></li>
+                        <li class="unchecked">三上に連絡、タイミングを合わせる</li>
+                        <li class="unchecked">彼女の出勤初日を確認</li>
+                    </ul>
+                `
+            },
+            {
+                id: 2,
+                title: '軟禁準備リスト',
+                date: '2022.10.20',
+                type: 'danger',
+                content: `
+                    <ul>
+                        <li class="checked">山奥の別荘契約<span class="memo-highlight">（現金払い、偽名）</span></li>
+                        <li class="checked">防犯カメラ設置（玄関、リビング、廊下）</li>
+                        <li class="checked">窓の鍵を強化、外から開かないように</li>
+                        <li class="checked">食料2週間分確保</li>
+                        <li class="checked">彼女の服・日用品を事前に購入</li>
+                        <li class="checked">車のGPS除去確認</li>
+                        <li class="checked">スマホ没収用の箱を用意</li>
+                        <li class="unchecked">近隣住民がいないか最終確認</li>
+                        <li class="unchecked">彼女の好きなオムライスの作り方を練習</li>
+                    </ul>
+                `
+            },
+            {
+                id: 3,
+                title: '笑顔の練習チェック',
+                date: '2022.08.01',
+                type: 'normal',
+                content: `
+                    <ul>
+                        <li class="unchecked">鏡の前で30分練習（毎朝）</li>
+                        <li class="unchecked">漫画の主人公の笑い方を研究</li>
+                        <li class="unchecked">目も一緒に笑う<span class="memo-warning">（口だけだと怖い）</span></li>
+                        <li class="unchecked">「大丈夫だよ」のトーン練習</li>
+                        <li class="unchecked">緊張すると顔がこわばる→深呼吸</li>
+                    </ul>
+                `
+            },
+            {
+                id: 4,
+                title: '三上への指示（削除予定）',
+                date: '2022.11.20',
+                type: 'danger',
+                content: `
+                    <ul>
+                        <li class="unchecked">場所：██公園裏、街灯のない道</li>
+                        <li class="unchecked">時間：20:30頃（彼女の退勤時間に合わせる）</li>
+                        <li class="unchecked"><span class="memo-warning">絶対に顔を傷つけるな</span></li>
+                        <li class="unchecked">怖がらせるだけ、やりすぎるな</li>
+                        <li class="unchecked">俺が来たらすぐ逃げろ</li>
+                        <li class="unchecked"><span class="memo-warning">失敗したらどうなるか分かってるな？</span></li>
+                    </ul>
+                `
+            },
+            {
+                id: 5,
+                title: '出世ルート研究',
+                date: '2022.07.10',
+                type: 'important',
+                content: `
+                    <p class="memo-section-title">実績の作り方</p>
+                    <ul>
+                        <li class="unchecked">三上を使って「事件」を作る→自分で「解決」</li>
+                        <li class="unchecked">犯人逮捕（三上に仲間を売らせる）</li>
+                        <li class="unchecked">火事から救出（三上に放火させる、小規模で）</li>
+                        <li class="unchecked">地域の防犯活動を積極的に主導</li>
+                    </ul>
+
+                    <p class="memo-section-title">信頼を得る方法</p>
+                    <ul>
+                        <li class="unchecked">老人の話を聞く（暇でも嫌な顔をしない）</li>
+                        <li class="unchecked">子供と遊ぶ（親の信頼につながる）</li>
+                        <li class="unchecked">地域イベントに必ず顔を出す</li>
+                        <li class="unchecked">困っている人を見つけたら率先して助ける</li>
+                    </ul>
+
+                    <p class="memo-section-title">上司への印象</p>
+                    <ul>
+                        <li class="unchecked">報告は迅速・簡潔に</li>
+                        <li class="unchecked">手柄は上司に花を持たせる（最初だけ）</li>
+                        <li class="unchecked">残業を惜しまない姿勢を見せる</li>
+                    </ul>
+
+                    <p class="memo-section-title">メディア露出</p>
+                    <ul>
+                        <li class="unchecked">地方紙に取り上げられるチャンスを狙う</li>
+                        <li class="unchecked">「若手警官、火災現場で幼児を救出」←<span class="memo-highlight">理想の見出し</span></li>
+                        <li class="unchecked">謙虚なコメントを準備しておく</li>
+                    </ul>
+
+                    <p class="memo-section-title">最終目標</p>
+                    <ul>
+                        <li class="unchecked">「町のヒーロー」として彼女に認知される</li>
+                        <li class="unchecked">彼女にとって「頼れる存在」になる</li>
+                        <li class="unchecked"><span class="memo-highlight">全ては彼女のため</span></li>
+                    </ul>
+                `
+            }
+        ];
+
+        // 渲染备忘录列表
+        function renderMemoList() {
+            memoViewState = 'list';
+
+            const listHtml = memoData.map(memo => {
+                const typeClass = memo.type === 'danger' ? 'danger' :
+                                  memo.type === 'important' ? 'important' : '';
+                // 提取预览文本
+                const previewText = memo.content
+                    .replace(/<[^>]*>/g, '')
+                    .replace(/\s+/g, ' ')
+                    .trim()
+                    .substring(0, 60) + '...';
+
+                return `
+                    <div class="memo-card ${typeClass}" onclick="openMemo(${memo.id})">
+                        <div class="memo-card-title">${memo.title}</div>
+                        <div class="memo-card-preview">${previewText}</div>
+                        <div class="memo-card-date">${memo.date}</div>
+                    </div>
+                `;
+            }).join('');
+
+            return `
+                <div class="memo-app">
+                    <div class="memo-list">
+                        ${listHtml}
+                    </div>
+                </div>
+            `;
+        }
+
+        // 打开备忘录详情
+        function openMemo(memoId) {
+            const memo = memoData.find(m => m.id === memoId);
+            if (!memo) return;
+
+            memoViewState = 'detail';
+            currentMemoId = memoId;
+
+            appContent.innerHTML = `
+                <div class="memo-app">
+                    <div class="memo-detail">
+                        <div class="memo-detail-header">
+                            <div class="memo-detail-title">${memo.title}</div>
+                            <div class="memo-detail-date">${memo.date}</div>
+                        </div>
+                        <div class="memo-detail-content">
+                            ${memo.content}
+                        </div>
+                        <button class="memo-back-btn" onclick="backToMemoList()">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+                            </svg>
+                            メモ一覧に戻る
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 返回备忘录列表
+        function backToMemoList() {
+            memoViewState = 'list';
+            currentMemoId = null;
+            appContent.innerHTML = renderMemoList();
+        }
+
+        // ========================================
+        // インターネット App（検索履歴）
+        // ========================================
+
+        // 搜索历史数据 - 按日期分组
+        // 类型: danger=危险搜索, obsession=关于女主, manipulation=心理操纵, normal=普通, map=地图
+        // 时间线：9月赴任前 → 10/10女主搬来 → 11/25初遇 → 12月交往 → 1月败露软禁
+        const browserHistoryData = [
+            // 最新（软禁中）- 单独一条
+            {
+                date: '2023年01月18日',
+                items: [
+                    { query: '財産 贈与 手続き 恋人', url: 'google.com', time: '03:42', type: 'obsession' },
+                ]
+            },
+            // 1月初（软禁开始）
+            {
+                date: '2023年01月05日',
+                items: [
+                    { query: '監禁罪 量刑', url: 'google.com', time: '02:15', type: 'danger' },
+                    { query: 'ストックホルム症候群', url: 'wikipedia.org', time: '01:47', type: 'danger' },
+                    { query: '彼女が自分だけを見てくれる方法', url: 'google.com', time: '01:23', type: 'obsession' },
+                ]
+            },
+            // 12月（交往期间）
+            {
+                date: '2022年12月15日',
+                items: [
+                    { query: 'おはようLINE 毎日 重い？', url: 'google.com', time: '07:12', type: 'normal' },
+                    { query: '相手に好きになってもらう方法', url: 'google.com', time: '00:33', type: 'obsession' },
+                ]
+            },
+            {
+                date: '2022年12月03日',
+                items: [
+                    { query: '好きな人 合コン 阻止', url: 'google.com', time: '23:08', type: 'obsession' },
+                ]
+            },
+            // 11月24日（襲撃事件の最終確認）
+            {
+                date: '2022年11月24日',
+                items: [
+                    { query: 'Google マップ：██公園', url: 'maps.google.com', time: '22:30', type: 'map' },
+                ]
+            },
+            // 11月20日（襲撃計画）
+            {
+                date: '2022年11月20日',
+                items: [
+                    { query: '女性 襲われた時 心理', url: 'google.com', time: '19:45', type: 'manipulation' },
+                    { query: 'トラウマ 克服 手伝う 信頼関係', url: 'google.com', time: '19:23', type: 'manipulation' },
+                ]
+            },
+            // 10月20日（女主搬来后、監視）
+            {
+                date: '2022年10月20日',
+                items: [
+                    { query: '人の家 入る バレない', url: 'google.com', time: '02:34', type: 'danger', deleted: true },
+                    { query: 'Google マップ：██中学校', url: 'maps.google.com', time: '01:12', type: 'map' },
+                ]
+            },
+            // 10月初（三上を利用）
+            {
+                date: '2022年10月05日',
+                items: [
+                    { query: '前科者 弱み 握る', url: 'google.com', time: '23:55', type: 'danger' },
+                ]
+            },
+            // 9月（赴任前）
+            {
+                date: '2022年09月25日',
+                items: [
+                    { query: '好きな人 調べる どこまでOK', url: 'google.com', time: '23:41', type: 'obsession' },
+                    { query: '██████（漫画） 主人公 髪型', url: 'google.com', time: '20:15', type: 'normal' },
+                    { query: '整形 男 ビフォーアフター', url: 'google.com', time: '19:58', type: 'normal' },
+                ]
+            },
+        ];
+
+        // 渲染浏览器搜索历史
+        function renderBrowser() {
+            const searchIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"/>
+                <path d="M21 21l-4.35-4.35"/>
+            </svg>`;
+
+            const mapIcon = `<svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+            </svg>`;
+
+            let historyHtml = browserHistoryData.map(group => {
+                const itemsHtml = group.items.map(item => {
+                    const typeClass = item.type || 'normal';
+                    const deletedClass = item.deleted ? 'deleted' : '';
+                    const icon = item.type === 'map' ? mapIcon : searchIcon;
+                    const deletedBadge = item.deleted ? '<span class="browser-deleted-badge">削除済み</span>' : '';
+
+                    return `
+                        <div class="browser-history-item ${typeClass} ${deletedClass}">
+                            <div class="browser-history-icon">${icon}</div>
+                            <div class="browser-history-content">
+                                <div class="browser-history-query">${item.query}</div>
+                                <div class="browser-history-url">${item.url}</div>
+                            </div>
+                            <div class="browser-history-time">${item.time}</div>
+                            ${deletedBadge}
+                        </div>
+                    `;
+                }).join('');
+
+                return `
+                    <div class="browser-history-group">
+                        <div class="browser-history-date">${group.date}</div>
+                        ${itemsHtml}
+                    </div>
+                `;
+            }).join('');
+
+            return `
+                <div class="browser-app">
+                    <div class="browser-search-bar">
+                        <div class="browser-search-input">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8"/>
+                                <path d="M21 21l-4.35-4.35"/>
+                            </svg>
+                            <span class="browser-search-text">検索またはURLを入力</span>
+                        </div>
+                    </div>
+                    <div class="browser-history-section">
+                        <div class="browser-history-title">
+                            <span>検索履歴</span>
+                        </div>
+                    </div>
+                    <div class="browser-history-list">
+                        ${historyHtml}
+                    </div>
+                </div>
+            `;
+        }
+
+        // ========================================
+        // メッセージ App（日式SNS风格）
+        // ========================================
+
+        let messageViewState = 'list'; // 'list' or 'chat'
+        let currentChatId = null;
+
+        // 聊天列表数据
+        const chatListData = [
+            {
+                id: 'private_user',
+                name: '███',
+                type: 'private',
+                avatar: '👩',
+                preview: '',
+                time: '',
+                unread: 0,
+                pinned: true,
+                draft: '愛してる、ずっと'
+            },
+            {
+                id: 'group_patrol',
+                name: '██町パトロール隊',
+                type: 'group',
+                avatar: '👮',
+                members: ['高橋', '松江', 'あなた'],
+                preview: '高橋：気をつけて帰ってね〜',
+                time: '20:15',
+                unread: 3
+            },
+            {
+                id: 'private_mikami',
+                name: '三上',
+                type: 'private',
+                avatar: '👤',
+                preview: '既読無視すんな。返事しろ',
+                time: '01/04',
+                unread: 0
+            },
+            // 装饰性聊天（不可打开）
+            {
+                id: 'disabled_koban',
+                name: '██交番',
+                type: 'group',
+                avatar: '🏢',
+                preview: '田中：明日のシフト確認よろしく',
+                time: '01/03',
+                unread: 0,
+                disabled: true
+            },
+            {
+                id: 'disabled_senpai',
+                name: '佐藤先輩',
+                type: 'private',
+                avatar: '👮‍♂️',
+                preview: '飲み会どうする？',
+                time: '12/28',
+                unread: 0,
+                disabled: true
+            },
+            {
+                id: 'disabled_neighbor',
+                name: '隣の山田さん',
+                type: 'private',
+                avatar: '👴',
+                preview: 'いつもありがとうね',
+                time: '12/20',
+                unread: 0,
+                disabled: true
+            },
+            {
+                id: 'disabled_gym',
+                name: 'ジム受付',
+                type: 'private',
+                avatar: '🏋️',
+                preview: '会員更新のお知らせ',
+                time: '12/15',
+                unread: 0,
+                disabled: true
+            },
+            {
+                id: 'private_villa',
+                name: '桐生さん',
+                type: 'private',
+                avatar: '🎩',
+                preview: '本当にありがとうございました',
+                time: '09/01',
+                unread: 0
+            }
+        ];
+
+        // 聊天消息数据
+        const chatMessagesData = {
+            'group_patrol': {
+                name: '██町パトロール隊',
+                type: 'group',
+                members: ['高橋', '松江', 'あなた'],
+                messages: [
+                    { date: '11月25日（金）' },
+                    {
+                        sender: 'takahashi',
+                        name: '高橋',
+                        text: 'お嬢ちゃん、今日は大変だったな…😢',
+                        translation: '（姑娘，今天真是辛苦你了…）',
+                        time: '21:32'
+                    },
+                    {
+                        sender: 'takahashi',
+                        name: '高橋',
+                        text: '怪我とかしてないか？何かあったらすぐ言ってくれよな',
+                        translation: '（有没有受伤？有什么事马上跟我说啊）',
+                        time: '21:32'
+                    },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: '大丈夫ですか？怖かったですよね…',
+                        translation: '（你还好吗？很害怕吧…）',
+                        time: '21:33',
+                        self: true
+                    },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: '俺、しばらく付近の巡回強化しますんで、安心してください (*´▽`*)',
+                        translation: '（我会加强附近的巡逻，请放心）',
+                        time: '21:33',
+                        self: true
+                    },
+                    {
+                        sender: 'user',
+                        name: 'あなた',
+                        text: 'ありがとうございます…本当に怖かったです💦',
+                        translation: '（谢谢你们…真的很害怕）',
+                        time: '21:35'
+                    },
+                    {
+                        sender: 'user',
+                        name: 'あなた',
+                        text: '松江さんが来てくれなかったら…',
+                        translation: '（如果松江先生没有来的话…）',
+                        time: '21:35'
+                    },
+                    {
+                        sender: 'takahashi',
+                        name: '高橋',
+                        text: 'マッツンがいてくれて本当に良かったよ！この町の誇りだな٩(๑❛ᴗ❛๑)۶',
+                        translation: '（有小松在真是太好了！真是这个镇的骄傲啊）',
+                        time: '21:36'
+                    },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: 'いえいえ、当然のことをしたまでです',
+                        translation: '（哪里哪里，只是做了应该做的事）',
+                        time: '21:36',
+                        self: true
+                    },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: '困っている人を助けるのが警察の仕事ですから (｀・ω・´)',
+                        translation: '（帮助有困难的人是警察的职责）',
+                        time: '21:37',
+                        self: true
+                    },
+                    {
+                        sender: 'takahashi',
+                        name: '高橋',
+                        text: 'お嬢ちゃん、明日から気をつけて帰るんだぞ。暗くなる前にな',
+                        translation: '（姑娘，从明天开始回家要小心啊。天黑之前回来）',
+                        time: '21:38'
+                    },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: 'あの…よかったら、しばらくの間、退勤時間に合わせて巡回しましょうか？',
+                        translation: '（那个…如果可以的话，这段时间我配合你的下班时间巡逻吧？）',
+                        time: '21:39',
+                        self: true
+                    },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: '犯人がまだ捕まってないので…ちょっと心配で💦',
+                        translation: '（因为犯人还没抓到…有点担心）',
+                        time: '21:39',
+                        self: true
+                    },
+                    {
+                        sender: 'user',
+                        name: 'あなた',
+                        text: 'えっ、そこまでしていただけるんですか…？',
+                        translation: '（诶，可以帮我做到这种程度吗…？）',
+                        time: '21:40'
+                    },
+                    {
+                        sender: 'user',
+                        name: 'あなた',
+                        text: 'ご迷惑じゃないですか？',
+                        translation: '（不会给您添麻烦吗？）',
+                        time: '21:40'
+                    },
+                    {
+                        sender: 'takahashi',
+                        name: '高橋',
+                        text: '迷惑なわけないだろ！マッツン、頼んだぞ👍',
+                        translation: '（怎么会添麻烦！小松，拜托你了）',
+                        time: '21:41'
+                    },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: '任せてください！絶対に守りますから ᕦ(ò_óˇ)ᕤ',
+                        translation: '（交给我吧！我一定会保护你的）',
+                        time: '21:41',
+                        self: true
+                    },
+                    {
+                        sender: 'user',
+                        name: 'あなた',
+                        text: 'ありがとうございます…松江さん、高橋さん (´；ω；`)',
+                        translation: '（谢谢你们…松江先生、高桥先生）',
+                        time: '21:42'
+                    },
+                    {
+                        sender: 'user',
+                        name: 'あなた',
+                        text: '本当に心強いです',
+                        translation: '（真的很安心）',
+                        time: '21:42'
+                    },
+                    {
+                        sender: 'takahashi',
+                        name: '高橋',
+                        text: 'よし、じゃあ今日はゆっくり休みな。おやすみ〜🌙',
+                        translation: '（好，那今天好好休息吧。晚安〜）',
+                        time: '21:43'
+                    },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: 'おやすみなさい。何かあったらいつでも連絡ください',
+                        translation: '（晚安。有什么事随时联系我）',
+                        time: '21:43',
+                        self: true
+                    },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: '明日、お仕事終わりに迎えに行きますね (*^^*)',
+                        translation: '（明天下班我去接你）',
+                        time: '21:44',
+                        self: true
+                    },
+                    {
+                        sender: 'user',
+                        name: 'あなた',
+                        text: 'はい、よろしくお願いします🙇‍♀️',
+                        translation: '（好的，拜托您了）',
+                        time: '21:45'
+                    },
+                    { date: '11月26日（土）' },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: 'おはようございます！今日も一日頑張りましょう☀️',
+                        translation: '（早上好！今天也加油吧）',
+                        time: '07:30',
+                        self: true
+                    },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: '昨日はちゃんと眠れましたか？',
+                        translation: '（昨天睡得好吗？）',
+                        time: '07:30',
+                        self: true
+                    },
+                    {
+                        sender: 'user',
+                        name: 'あなた',
+                        text: 'おはようございます！少し夢見が悪かったですけど、大丈夫です',
+                        translation: '（早上好！做了点噩梦，但没事的）',
+                        time: '07:45'
+                    },
+                    {
+                        sender: 'takahashi',
+                        name: '高橋',
+                        text: 'おはよう〜！無理すんなよ〜',
+                        translation: '（早上好〜！别勉强自己啊〜）',
+                        time: '08:02'
+                    },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: '夢見悪かったんですね…(´・ω・`)',
+                        translation: '（做噩梦了啊…）',
+                        time: '08:15',
+                        self: true
+                    },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: '今日のお昼、巡回のついでに何か差し入れ持っていきましょうか？',
+                        translation: '（今天中午巡逻顺便给你带点吃的吧？）',
+                        time: '08:15',
+                        self: true
+                    },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: '甘いもの食べると元気出ますよ✨',
+                        translation: '（吃甜的东西会精神起来的）',
+                        time: '08:16',
+                        self: true
+                    },
+                    {
+                        sender: 'user',
+                        name: 'あなた',
+                        text: 'えっ、いいんですか…？🥺',
+                        translation: '（诶，可以吗…？）',
+                        time: '08:20'
+                    },
+                    {
+                        sender: 'takahashi',
+                        name: '高橋',
+                        text: 'マッツン優しいな〜😊 俺も何か持ってくわ！',
+                        translation: '（小松真温柔啊〜 我也带点东西去！）',
+                        time: '08:22'
+                    },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: '高橋さんまで！笑',
+                        translation: '（连高桥先生也！笑）',
+                        time: '08:23',
+                        self: true
+                    },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: 'じゃあ、お昼頃に寄りますね。待っててください (*´ω`*)',
+                        translation: '（那中午左右过去哦。等着我）',
+                        time: '08:24',
+                        self: true
+                    },
+                    {
+                        sender: 'user',
+                        name: 'あなた',
+                        text: 'ありがとうございます…！お二人とも優しすぎます😭',
+                        translation: '（谢谢你们…！两位都太温柔了）',
+                        time: '08:25'
+                    },
+                    {
+                        sender: 'takahashi',
+                        name: '高橋',
+                        text: '困った時はお互い様だ！気をつけて帰ってね〜',
+                        translation: '（有困难的时候要互相帮助！小心回家哦〜）',
+                        time: '20:15'
+                    }
+                ]
+            },
+            // 和女主的私聊
+            'private_user': {
+                name: '███',
+                type: 'private',
+                messages: [
+                    { date: '11月25日（金）' },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: '今日は本当に怖かったですよね。大丈夫ですか？',
+                        translation: '（今天真的很害怕吧。你还好吗？）',
+                        time: '22:15',
+                        self: true
+                    },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: '何かあったらいつでも連絡ください。俺、必ず駆けつけますから',
+                        translation: '（有什么事随时联系我。我一定会赶过去的）',
+                        time: '22:15',
+                        self: true
+                    },
+                    {
+                        sender: 'user',
+                        name: '███',
+                        text: 'ありがとうございます…',
+                        translation: '（谢谢您…）',
+                        time: '22:20'
+                    },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: '無理しないでくださいね。おやすみなさい🌙',
+                        translation: '（不要勉强自己哦。晚安）',
+                        time: '22:21',
+                        self: true
+                    },
+                    {
+                        sender: 'user',
+                        name: '███',
+                        text: 'おやすみなさい',
+                        translation: '（晚安）',
+                        time: '22:23'
+                    },
+                    { date: '11月28日（月）' },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: 'お仕事お疲れ様です！今日も何事もなくてよかったです (*´▽`*)',
+                        translation: '（工作辛苦了！今天也平安无事真是太好了）',
+                        time: '18:30',
+                        self: true
+                    },
+                    {
+                        sender: 'user',
+                        name: '███',
+                        text: '松江さんのおかげです',
+                        translation: '（托松江先生的福）',
+                        time: '18:35'
+                    },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: 'いえいえ💦 あの、よかったら今度の休みにお茶でもどうですか？',
+                        translation: '（哪里哪里 那个，方便的话下次休息一起喝杯茶怎么样？）',
+                        time: '18:36',
+                        self: true
+                    },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: '気分転換になるかなって…迷惑だったらすみません！',
+                        translation: '（想着可以换换心情…如果打扰到您的话抱歉！）',
+                        time: '18:36',
+                        self: true
+                    },
+                    {
+                        sender: 'user',
+                        name: '███',
+                        text: 'ぜひ！',
+                        translation: '（好的！）',
+                        time: '18:40'
+                    },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: '本当ですか！？やった！！ヾ(≧▽≦*)o',
+                        translation: '（真的吗！？太好了！！）',
+                        time: '18:40',
+                        self: true
+                    },
+                    { date: '12月4日（日）' },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: '今日は楽しかったです！また行きましょうね☕',
+                        translation: '（今天很开心！下次再一起去吧）',
+                        time: '17:20',
+                        self: true
+                    },
+                    {
+                        sender: 'user',
+                        name: '███',
+                        text: '私も楽しかったです😊',
+                        translation: '（我也很开心）',
+                        time: '17:25'
+                    },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: 'あの…実は、ずっと言いたかったことがあって',
+                        translation: '（那个…其实，有件事一直想说）',
+                        time: '17:30',
+                        self: true
+                    },
+                    {
+                        sender: 'user',
+                        name: '███',
+                        text: '？',
+                        translation: '（？）',
+                        time: '17:31'
+                    },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: '直接会って言いたいので…明日、時間もらえますか？',
+                        translation: '（想当面说…明天可以给我点时间吗？）',
+                        time: '17:32',
+                        self: true
+                    },
+                    {
+                        sender: 'user',
+                        name: '███',
+                        text: 'はい',
+                        translation: '（好的）',
+                        time: '17:35'
+                    },
+                    { date: '12月5日（月）' },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: '今日は…ありがとうございました',
+                        translation: '（今天…谢谢你）',
+                        time: '21:00',
+                        self: true
+                    },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: '俺、絶対に幸せにしますから。約束します',
+                        translation: '（我一定会让你幸福的。我保证）',
+                        time: '21:00',
+                        self: true
+                    },
+                    {
+                        sender: 'user',
+                        name: '███',
+                        text: 'こちらこそ、よろしくお願いします',
+                        translation: '（我才是，请多关照）',
+                        time: '21:05'
+                    },
+                    { date: '12月10日（土）' },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: 'おはよ〜！今日のデート楽しみ♪',
+                        translation: '（早上好〜！好期待今天的约会♪）',
+                        time: '08:00',
+                        self: true
+                    },
+                    {
+                        sender: 'user',
+                        name: '███',
+                        text: 'おはよう！私も〜',
+                        translation: '（早上好！我也是〜）',
+                        time: '08:10'
+                    },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: '何食べたい？🍽️',
+                        translation: '（想吃什么？）',
+                        time: '08:11',
+                        self: true
+                    },
+                    {
+                        sender: 'user',
+                        name: '███',
+                        text: 'オムライス！',
+                        translation: '（蛋包饭！）',
+                        time: '08:12'
+                    },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: 'オムライスね！了解👍 美味しいお店知ってるよ',
+                        translation: '（蛋包饭啊！了解 我知道一家很好吃的店）',
+                        time: '08:12',
+                        self: true
+                    },
+                    { date: '12月24日（土）' },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: 'メリークリスマス🎄✨',
+                        translation: '（圣诞快乐）',
+                        time: '00:00',
+                        self: true
+                    },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: '君と過ごす初めてのクリスマス、すごく嬉しい',
+                        translation: '（和你一起度过的第一个圣诞节，非常开心）',
+                        time: '00:00',
+                        self: true
+                    },
+                    {
+                        sender: 'user',
+                        name: '███',
+                        text: 'メリークリスマス🎅',
+                        translation: '（圣诞快乐）',
+                        time: '00:02'
+                    },
+                    {
+                        sender: 'user',
+                        name: '███',
+                        text: '私も嬉しい',
+                        translation: '（我也很开心）',
+                        time: '00:02'
+                    },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: 'ずっと一緒にいようね',
+                        translation: '（永远在一起吧）',
+                        time: '00:03',
+                        self: true
+                    },
+                    {
+                        sender: 'user',
+                        name: '███',
+                        text: 'うん',
+                        translation: '（嗯）',
+                        time: '00:05'
+                    },
+                    { date: '1月17日（火）' },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: 'ごめん',
+                        translation: '（对不起）',
+                        time: '03:15',
+                        self: true,
+                        unread: true
+                    },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: '本当にごめん',
+                        translation: '（真的对不起）',
+                        time: '03:15',
+                        self: true,
+                        unread: true
+                    },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: '君の笑顔が見たかっただけなのに、俺が奪ってしまった',
+                        translation: '（我只是想看到你的笑容，却亲手夺走了它）',
+                        time: '03:16',
+                        self: true,
+                        unread: true
+                    },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: '君を幸せにできるのは、俺じゃなかった',
+                        translation: '（能让你幸福的人，不是我）',
+                        time: '03:20',
+                        self: true,
+                        unread: true
+                    },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: '自由にしてあげる。もう怖い思いはさせない',
+                        translation: '（我会让你自由的。不会再让你害怕了）',
+                        time: '03:21',
+                        self: true,
+                        unread: true
+                    },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: '今まで関わった全ての人に罪を償う。君にも',
+                        translation: '（我会向所有被我牵连的人赎罪。也包括你）',
+                        time: '03:25',
+                        self: true,
+                        unread: true
+                    },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: '生きる希望をくれて、ありがとう',
+                        translation: '（谢谢你给了我活下去的希望）',
+                        time: '03:30',
+                        self: true,
+                        unread: true
+                    },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: 'じゃあ、元気で',
+                        translation: '（那么，保重）',
+                        time: '03:31',
+                        self: true,
+                        unread: true
+                    }
+                ]
+            },
+            // 和三上的私聊
+            'private_mikami': {
+                name: '三上',
+                type: 'private',
+                messages: [
+                    { date: '10月5日（水）' },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: '久しぶり、三上',
+                        translation: '（好久不见，三上）',
+                        time: '23:00',
+                        self: true
+                    },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: '覚えてるよな？中学の頃の「バイキン」だよ',
+                        translation: '（还记得吧？中学时的"细菌"啊）',
+                        time: '23:00',
+                        self: true
+                    },
+                    {
+                        sender: 'mikami',
+                        name: '三上',
+                        text: 'は？誰だよ',
+                        translation: '（啊？你谁啊）',
+                        time: '23:05'
+                    },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: '松江正義。今は警察やってる',
+                        translation: '（松江正义。现在当警察）',
+                        time: '23:05',
+                        self: true
+                    },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: 'お前の「仕事」のこと、全部知ってるよ',
+                        translation: '（你的"工作"，我全都知道）',
+                        time: '23:06',
+                        self: true
+                    },
+                    {
+                        sender: 'mikami',
+                        name: '三上',
+                        text: '…何が言いたい',
+                        translation: '（…你想说什么）',
+                        time: '23:10'
+                    },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: '俺の言うこと聞けば見逃してやる。簡単だろ？',
+                        translation: '（听我的话就放过你。很简单吧？）',
+                        time: '23:10',
+                        self: true
+                    },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: '断ったら…分かるよな？',
+                        translation: '（拒绝的话…你懂的吧？）',
+                        time: '23:11',
+                        self: true
+                    },
+                    {
+                        sender: 'mikami',
+                        name: '三上',
+                        text: 'クソが',
+                        translation: '（妈的）',
+                        time: '23:15'
+                    },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: '返事は？',
+                        translation: '（回答呢？）',
+                        time: '23:15',
+                        self: true
+                    },
+                    {
+                        sender: 'mikami',
+                        name: '三上',
+                        text: '…分かったよ',
+                        translation: '（…知道了）',
+                        time: '23:20'
+                    },
+                    { date: '11月20日（日）' },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: '11/25、20:30、██公園裏',
+                        translation: '（11/25、20:30、██公园后面）',
+                        time: '22:00',
+                        self: true
+                    },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: '女が一人で通る。怖がらせるだけでいい',
+                        translation: '（会有个女人独自经过。只要吓唬她就行）',
+                        time: '22:00',
+                        self: true
+                    },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: '絶対に顔を傷つけるな。やりすぎるな',
+                        translation: '（绝对不能伤到脸。不要做过头）',
+                        time: '22:01',
+                        self: true
+                    },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: '俺が来たらすぐ逃げろ',
+                        translation: '（我来了就立刻逃跑）',
+                        time: '22:01',
+                        self: true
+                    },
+                    {
+                        sender: 'mikami',
+                        name: '三上',
+                        text: 'お前マジで頭おかしいな',
+                        translation: '（你是真的有病吧）',
+                        time: '22:10'
+                    },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: 'お前に言われたくない',
+                        translation: '（你没资格说我）',
+                        time: '22:10',
+                        self: true
+                    },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: '失敗したらどうなるか分かってるよな？',
+                        translation: '（失败的话会怎样你懂的吧？）',
+                        time: '22:11',
+                        self: true
+                    },
+                    {
+                        sender: 'mikami',
+                        name: '三上',
+                        text: '分かってるよ…',
+                        translation: '（知道了…）',
+                        time: '22:15'
+                    },
+                    { date: '11月25日（金）' },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: 'よくやった',
+                        translation: '（干得好）',
+                        time: '21:00',
+                        self: true
+                    },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: 'しばらく連絡するな。こっちから連絡する',
+                        translation: '（暂时不要联系我。我会联系你）',
+                        time: '21:00',
+                        self: true
+                    },
+                    {
+                        sender: 'mikami',
+                        name: '三上',
+                        text: 'これで終わりだよな？',
+                        translation: '（这就结束了吧？）',
+                        time: '21:05'
+                    },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: '終わり？',
+                        translation: '（结束？）',
+                        time: '21:05',
+                        self: true
+                    },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: 'お前が俺に逆らえなくなった時点で、終わりなんてないよ',
+                        translation: '（从你无法反抗我的那一刻起，就不存在结束了）',
+                        time: '21:06',
+                        self: true
+                    },
+                    {
+                        sender: 'mikami',
+                        name: '三上',
+                        text: 'てめえ…！',
+                        translation: '（你这混蛋…！）',
+                        time: '21:10'
+                    },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: '大人しくしてろ。次の指示を待て',
+                        translation: '（老实点。等下一步指示）',
+                        time: '21:10',
+                        self: true
+                    },
+                    { date: '1月4日（水）' },
+                    {
+                        sender: 'mikami',
+                        name: '三上',
+                        text: 'もう関わりたくない。あの子にも全部言った',
+                        translation: '（我不想再牵扯进去了。我已经全告诉那女孩了）',
+                        time: '15:00'
+                    },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: '何？',
+                        translation: '（什么？）',
+                        time: '15:01',
+                        self: true
+                    },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: 'お前、何言った',
+                        translation: '（你说了什么）',
+                        time: '15:01',
+                        self: true
+                    },
+                    {
+                        sender: 'mikami',
+                        name: '三上',
+                        text: '全部だよ。お前の計画も、俺が襲ったことも',
+                        translation: '（全部。你的计划，我袭击她的事）',
+                        time: '15:02'
+                    },
+                    {
+                        sender: 'mikami',
+                        name: '三上',
+                        text: 'あの子が可哀想になった。お前に利用されて',
+                        translation: '（那女孩太可怜了。被你利用）',
+                        time: '15:02'
+                    },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: 'お前…',
+                        translation: '（你…）',
+                        time: '15:03',
+                        self: true
+                    },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: 'お前、何してくれてんだよ',
+                        translation: '（你知道你做了什么吗）',
+                        time: '15:03',
+                        self: true
+                    },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: '殺す',
+                        translation: '（我要杀了你）',
+                        time: '15:04',
+                        self: true
+                    },
+                    {
+                        sender: 'mikami',
+                        name: '三上',
+                        text: 'もう逃げる。お前の手の届かないところに',
+                        translation: '（我要跑了。去你够不到的地方）',
+                        time: '15:05'
+                    },
+                    {
+                        sender: 'mikami',
+                        name: '三上',
+                        text: 'あばよ、バイキン。いや、正義の味方さん？笑',
+                        translation: '（再见了，细菌。不对，正义的伙伴先生？笑）',
+                        time: '15:05'
+                    },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: '待て',
+                        translation: '（等等）',
+                        time: '15:06',
+                        self: true
+                    },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: '三上',
+                        translation: '（三上）',
+                        time: '15:10',
+                        self: true
+                    },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: '返事しろ',
+                        translation: '（回话）',
+                        time: '15:30',
+                        self: true
+                    },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: '既読無視すんな。返事しろ',
+                        translation: '（别已读不回。回话）',
+                        time: '16:00',
+                        self: true
+                    }
+                ]
+            },
+            // 和桐生（别墅提供者）的私聊
+            'private_villa': {
+                name: '桐生さん',
+                type: 'private',
+                messages: [
+                    { date: '8月15日（月）' },
+                    {
+                        sender: 'kiryu',
+                        name: '桐生',
+                        text: '松江さん、先日は本当にありがとうございました',
+                        translation: '（松江先生，前些日子真的非常感谢您）',
+                        time: '10:00'
+                    },
+                    {
+                        sender: 'kiryu',
+                        name: '桐生',
+                        text: '息子を火事から助けていただいて…命の恩人です',
+                        translation: '（您从火灾中救出了我儿子…您是我们的救命恩人）',
+                        time: '10:00'
+                    },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: 'いえ、当然のことをしたまでです',
+                        translation: '（不，只是做了应该做的事）',
+                        time: '10:05',
+                        self: true
+                    },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: '息子さん、怪我の具合はいかがですか？',
+                        translation: '（令公子的伤势怎么样了？）',
+                        time: '10:05',
+                        self: true
+                    },
+                    {
+                        sender: 'kiryu',
+                        name: '桐生',
+                        text: 'おかげさまで完治しました！元気に走り回ってます😊',
+                        translation: '（托您的福已经痊愈了！现在活蹦乱跳的）',
+                        time: '10:08'
+                    },
+                    {
+                        sender: 'kiryu',
+                        name: '桐生',
+                        text: 'つきましては、お礼をさせていただきたく…',
+                        translation: '（所以，我想表达一下谢意…）',
+                        time: '10:08'
+                    },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: 'いえいえ、お気持ちだけで十分です💦',
+                        translation: '（不不，心意我领了就足够了）',
+                        time: '10:10',
+                        self: true
+                    },
+                    {
+                        sender: 'kiryu',
+                        name: '桐生',
+                        text: '実は、山奥に別荘がありまして',
+                        translation: '（其实，我在深山里有一栋别墅）',
+                        time: '10:12'
+                    },
+                    {
+                        sender: 'kiryu',
+                        name: '桐生',
+                        text: 'もう何年も使っていないのですが、いつでも自由にお使いください',
+                        translation: '（已经好几年没用了，请随时自由使用）',
+                        time: '10:12'
+                    },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: 'えっ、そんな…それは受け取れません',
+                        translation: '（诶，这…我不能收）',
+                        time: '10:15',
+                        self: true
+                    },
+                    {
+                        sender: 'kiryu',
+                        name: '桐生',
+                        text: '貸すだけですから！息抜きにでも使ってください',
+                        translation: '（只是借您用！散散心什么的时候用）',
+                        time: '10:16'
+                    },
+                    {
+                        sender: 'kiryu',
+                        name: '桐生',
+                        text: '静かで、周りに何もない、一人になれる場所です',
+                        translation: '（很安静，周围什么都没有，是个可以独处的地方）',
+                        time: '10:16'
+                    },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: '…いえ、本当に結構です',
+                        translation: '（…不，真的不用了）',
+                        time: '10:20',
+                        self: true
+                    },
+                    {
+                        sender: 'kiryu',
+                        name: '桐生',
+                        text: '遠慮しないでください🙏',
+                        translation: '（请不要客气）',
+                        time: '10:21'
+                    },
+                    {
+                        sender: 'kiryu',
+                        name: '桐生',
+                        text: '鍵と場所の情報だけお送りします。使う使わないは松江さんの自由です',
+                        translation: '（我先把钥匙和位置信息发给您。用不用随您）',
+                        time: '10:21'
+                    },
+                    {
+                        sender: 'kiryu',
+                        name: '桐生',
+                        text: '【画像】📍別荘の位置情報',
+                        translation: '（【图片】📍别墅位置信息）',
+                        time: '10:22'
+                    },
+                    { date: '9月1日（木）' },
+                    {
+                        sender: 'kiryu',
+                        name: '桐生',
+                        text: '鍵、届きましたでしょうか？',
+                        translation: '（钥匙收到了吗？）',
+                        time: '14:00'
+                    },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: 'はい、届きました。本当にありがとうございます',
+                        translation: '（是的，收到了。真的非常感谢）',
+                        time: '14:10',
+                        self: true
+                    },
+                    {
+                        sender: 'kiryu',
+                        name: '桐生',
+                        text: 'いつか必要になった時、使ってくださいね',
+                        translation: '（什么时候需要的话，请一定使用）',
+                        time: '14:11'
+                    },
+                    {
+                        sender: 'kiryu',
+                        name: '桐生',
+                        text: '本当にありがとうございました',
+                        translation: '（真的非常感谢您）',
+                        time: '14:11'
+                    },
+                    {
+                        sender: 'matsue',
+                        name: '松江',
+                        text: 'こちらこそ、ありがとうございます',
+                        translation: '（我才要谢谢您）',
+                        time: '14:15',
+                        self: true
+                    }
+                ]
+            }
+        };
+
+        // 渲染聊天列表
+        function renderChatList() {
+            messageViewState = 'list';
+            currentChatId = null;
+
+            const listHtml = chatListData.map(chat => {
+                const avatarClass = chat.type === 'group' ? 'group' : '';
+                const unreadBadge = chat.unread ? `<div class="chat-unread">${chat.unread}</div>` : '';
+                const pinnedClass = chat.pinned ? 'pinned' : '';
+                const pinnedIcon = chat.pinned ? '<span class="chat-pin">📌</span>' : '';
+                const disabledClass = chat.disabled ? 'disabled' : '';
+
+                // 草稿显示
+                let previewContent = chat.preview;
+                if (chat.draft) {
+                    previewContent = `<span class="chat-draft">[下書き] ${chat.draft}</span>`;
+                }
+
+                // 禁用的聊天不响应点击
+                const onclickAttr = chat.disabled ? '' : `onclick="openChat('${chat.id}')"`;
+
+                return `
+                    <div class="chat-item ${pinnedClass} ${disabledClass}" ${onclickAttr}>
+                        <div class="chat-avatar ${avatarClass}">${chat.avatar}</div>
+                        <div class="chat-info">
+                            <div class="chat-header">
+                                <span class="chat-name">${chat.name}${pinnedIcon}</span>
+                                <span class="chat-time">${chat.time}</span>
+                            </div>
+                            <div class="chat-preview">${previewContent}</div>
+                        </div>
+                        ${unreadBadge}
+                    </div>
+                `;
+            }).join('');
+
+            return `
+                <div class="messages-app">
+                    <div class="chat-list">
+                        ${listHtml}
+                    </div>
+                </div>
+            `;
+        }
+
+        // 打开聊天详情
+        function openChat(chatId) {
+            const chat = chatMessagesData[chatId];
+            if (!chat) return;
+
+            messageViewState = 'chat';
+            currentChatId = chatId;
+
+            const chatInfo = chatListData.find(c => c.id === chatId);
+            const isPrivate = chat.type === 'private';
+
+            const messagesHtml = chat.messages.map(msg => {
+                // 日期分隔线
+                if (msg.date) {
+                    return `
+                        <div class="message-date-divider">
+                            <span>${msg.date}</span>
+                        </div>
+                    `;
+                }
+
+                const selfClass = msg.self ? 'self' : 'other';
+                const avatarClass = msg.sender;
+                const senderClass = msg.sender;
+
+                // 生成头像emoji
+                let avatarEmoji = '👤';
+                if (msg.sender === 'takahashi') avatarEmoji = '👨';
+                else if (msg.sender === 'matsue') avatarEmoji = '👮';
+                else if (msg.sender === 'user') avatarEmoji = '👩';
+                else if (msg.sender === 'mikami') avatarEmoji = '👤';
+                else if (msg.sender === 'kiryu') avatarEmoji = '🎩';
+
+                // 已读标记（自己发的消息显示，如果msg.unread为true则不显示既読）
+                let readMark = '';
+                if (msg.self) {
+                    readMark = msg.unread ? '' : '<span class="message-read">既読</span>';
+                }
+
+                // 翻译
+                const translationHtml = msg.translation ? `<div class="message-translation">${msg.translation}</div>` : '';
+
+                // 私聊时不显示发送者名字
+                const senderHtml = isPrivate ? '' : `<span class="message-sender ${senderClass}">${msg.name}</span>`;
+
+                return `
+                    <div class="message-item ${selfClass}">
+                        <div class="message-avatar ${avatarClass}">${avatarEmoji}</div>
+                        <div class="message-content-wrapper">
+                            ${senderHtml}
+                            <div class="message-bubble">${msg.text}</div>
+                            ${translationHtml}
+                            <div class="message-meta">
+                                ${readMark}
+                                <span>${msg.time}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            const membersText = chat.type === 'group' ? `メンバー: ${chat.members.join(', ')}` : '';
+
+            // 草稿输入框内容
+            const draftText = chatInfo?.draft || 'メッセージを入力...';
+            const draftClass = chatInfo?.draft ? 'has-draft' : '';
+
+            appContent.innerHTML = `
+                <div class="messages-app">
+                    <div class="chat-view">
+                        <div class="chat-view-header">
+                            <div class="chat-view-avatar">${chatInfo?.avatar || '💬'}</div>
+                            <div>
+                                <div class="chat-view-name">${chat.name}</div>
+                                <div class="chat-view-members">${membersText}</div>
+                            </div>
+                        </div>
+                        <div class="message-list">
+                            ${messagesHtml}
+                        </div>
+                        <div class="chat-input-area">
+                            <div class="chat-input ${draftClass}">${draftText}</div>
+                            <div class="chat-send-btn" ${chatInfo?.draft && chatId === 'private_user' ? 'onclick="sendFinalMessage()"' : ''}>
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="chat-back-btn" onclick="backToChatList()">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+                            </svg>
+                            トーク一覧に戻る
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // 滚动到底部
+            setTimeout(() => {
+                const messageList = document.querySelector('.message-list');
+                if (messageList) {
+                    messageList.scrollTop = messageList.scrollHeight;
+                }
+            }, 100);
+        }
+
+        // 返回聊天列表
+        function backToChatList() {
+            messageViewState = 'list';
+            currentChatId = null;
+            appContent.innerHTML = renderChatList();
+        }
+
+        // 发送最后的消息（彩蛋）
+        function sendFinalMessage() {
+            const messageList = document.querySelector('.message-list');
+            const chatInput = document.querySelector('.chat-input');
+            const sendBtn = document.querySelector('.chat-send-btn');
+
+            if (!messageList || !chatInput) return;
+
+            // 禁用发送按钮防止重复点击
+            sendBtn.style.pointerEvents = 'none';
+
+            // 获取草稿内容
+            const draftText = '愛してる、ずっと';
+
+            // 清空输入框
+            chatInput.textContent = 'メッセージを入力...';
+            chatInput.classList.remove('has-draft');
+
+            // 添加发送的消息到列表
+            const newMessage = document.createElement('div');
+            newMessage.className = 'message-item self';
+            newMessage.innerHTML = `
+                <div class="message-avatar matsue">👮</div>
+                <div class="message-content-wrapper">
+                    <div class="message-bubble">${draftText}</div>
+                    <div class="message-translation">（我爱你，永远）</div>
+                    <div class="message-meta">
+                        <span class="message-time">${new Date().getHours().toString().padStart(2, '0')}:${new Date().getMinutes().toString().padStart(2, '0')}</span>
+                    </div>
+                </div>
+            `;
+            messageList.appendChild(newMessage);
+
+            // 滚动到底部
+            messageList.scrollTop = messageList.scrollHeight;
+
+            // 1.5秒后显示已读
+            setTimeout(() => {
+                const meta = newMessage.querySelector('.message-meta');
+                const readMark = document.createElement('span');
+                readMark.className = 'message-read';
+                readMark.textContent = '既読';
+                meta.insertBefore(readMark, meta.firstChild);
+            }, 1500);
+
+            // 3秒后开始星空飘落特效
+            setTimeout(() => {
+                startFallingStarsEffect();
+            }, 3000);
+        }
+
+        // 星空飘落特效
+        function startFallingStarsEffect() {
+            // 创建特效覆盖层
+            const overlay = document.createElement('div');
+            overlay.className = 'falling-stars-overlay';
+            document.querySelector('.phone-frame').appendChild(overlay);
+
+            // 点击关闭特效
+            overlay.addEventListener('click', () => {
+                overlay.classList.add('fading-out');
+                setTimeout(() => {
+                    overlay.remove();
+                }, 500);
+            });
+
+            // 创建飘落的星星
+            const starCount = 50;
+            for (let i = 0; i < starCount; i++) {
+                setTimeout(() => {
+                    if (!document.contains(overlay)) return; // 如果已移除则停止
+                    const star = document.createElement('div');
+                    star.className = 'falling-star';
+                    star.style.left = Math.random() * 100 + '%';
+                    star.style.animationDuration = (3 + Math.random() * 4) + 's';
+                    star.style.animationDelay = '0s';
+                    star.style.opacity = 0.3 + Math.random() * 0.7;
+
+                    // 随机星星大小
+                    const size = 2 + Math.random() * 4;
+                    star.style.width = size + 'px';
+                    star.style.height = size + 'px';
+
+                    overlay.appendChild(star);
+
+                    // 星星落下后移除
+                    star.addEventListener('animationend', () => {
+                        star.remove();
+                    });
+                }, i * 100);
+            }
+
+            // 逐渐变暗
+            setTimeout(() => {
+                if (!document.contains(overlay)) return;
+                overlay.classList.add('darkening');
+            }, 500);
+
+            // 显示结语文字
+            setTimeout(() => {
+                if (!document.contains(overlay)) return;
+                const endText = document.createElement('div');
+                endText.className = 'ending-text';
+                endText.innerHTML = `
+                    <div class="ending-line">この想いは届かなくても</div>
+                    <div class="ending-line-sub">（即使这份心意无法传达）</div>
+                    <div class="ending-line" style="margin-top: 20px;">ずっと、愛してる</div>
+                    <div class="ending-line-sub">（我会永远爱你）</div>
+                `;
+                overlay.appendChild(endText);
+
+                // 显示点击提示
+                setTimeout(() => {
+                    if (!document.contains(overlay)) return;
+                    const hint = document.createElement('div');
+                    hint.className = 'ending-hint';
+                    hint.textContent = 'タップして閉じる';
+                    overlay.appendChild(hint);
+                }, 2000);
+            }, 4000);
         }
     </script>
 </body>

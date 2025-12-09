@@ -1,6 +1,323 @@
 /* ========================================
    Browser App Styles
-   ブラウザ
+   インターネット（検索履歴）
    ======================================== */
 
-/* 浏览器样式将在后续实现 */
+/* 浏览器容器 */
+.browser-app {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: linear-gradient(180deg,
+        rgba(20, 18, 28, 0.95) 0%,
+        rgba(30, 25, 40, 0.98) 100%);
+}
+
+/* ========================================
+   搜索框区域
+   ======================================== */
+.browser-search-bar {
+    padding: 16px;
+    flex-shrink: 0;
+}
+
+.browser-search-input {
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    padding: 10px 16px;
+    gap: 10px;
+}
+
+.browser-search-input svg {
+    width: 16px;
+    height: 16px;
+    color: rgba(255, 255, 255, 0.4);
+    flex-shrink: 0;
+}
+
+.browser-search-text {
+    flex: 1;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.35);
+}
+
+/* ========================================
+   搜索历史列表
+   ======================================== */
+.browser-history-section {
+    padding: 0 16px 8px;
+}
+
+.browser-history-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.browser-history-title span {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.4);
+    letter-spacing: 0.5px;
+}
+
+.browser-history-clear {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.25);
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.browser-history-clear:hover {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.browser-history-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 16px 16px;
+}
+
+.browser-history-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.browser-history-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.browser-history-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 2px;
+}
+
+/* 搜索历史分组（按日期） */
+.browser-history-group {
+    margin-bottom: 20px;
+}
+
+.browser-history-date {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.3);
+    margin-bottom: 10px;
+    padding-left: 4px;
+}
+
+/* 搜索历史项 */
+.browser-history-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 14px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.browser-history-item:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+.browser-history-item:active {
+    transform: scale(0.98);
+}
+
+.browser-history-item:last-child {
+    margin-bottom: 0;
+}
+
+/* 搜索图标 */
+.browser-history-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.06);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.browser-history-icon svg {
+    width: 14px;
+    height: 14px;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+/* 搜索内容 */
+.browser-history-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.browser-history-query {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.85);
+    margin-bottom: 4px;
+    line-height: 1.4;
+}
+
+.browser-history-url {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.3);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.browser-history-time {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.25);
+    flex-shrink: 0;
+}
+
+/* ========================================
+   不同类型的搜索标记
+   ======================================== */
+
+/* 危险/敏感搜索 - 红色 */
+.browser-history-item.danger {
+    border-left: 3px solid rgba(200, 100, 100, 0.4);
+    background: rgba(200, 100, 100, 0.04);
+}
+
+.browser-history-item.danger:hover {
+    background: rgba(200, 100, 100, 0.07);
+}
+
+.browser-history-item.danger .browser-history-icon {
+    background: rgba(200, 100, 100, 0.15);
+}
+
+.browser-history-item.danger .browser-history-icon svg {
+    color: rgba(220, 130, 130, 0.8);
+}
+
+/* 关于女主的搜索 - 紫色 */
+.browser-history-item.obsession {
+    border-left: 3px solid rgba(180, 130, 200, 0.4);
+    background: rgba(180, 130, 200, 0.04);
+}
+
+.browser-history-item.obsession:hover {
+    background: rgba(180, 130, 200, 0.07);
+}
+
+.browser-history-item.obsession .browser-history-icon {
+    background: rgba(180, 130, 200, 0.15);
+}
+
+.browser-history-item.obsession .browser-history-icon svg {
+    color: rgba(200, 150, 220, 0.8);
+}
+
+/* 心理操纵类搜索 - 橙色 */
+.browser-history-item.manipulation {
+    border-left: 3px solid rgba(200, 160, 100, 0.4);
+    background: rgba(200, 160, 100, 0.04);
+}
+
+.browser-history-item.manipulation:hover {
+    background: rgba(200, 160, 100, 0.07);
+}
+
+.browser-history-item.manipulation .browser-history-icon {
+    background: rgba(200, 160, 100, 0.15);
+}
+
+.browser-history-item.manipulation .browser-history-icon svg {
+    color: rgba(220, 180, 120, 0.8);
+}
+
+/* 伪装的正常搜索 */
+.browser-history-item.normal {
+    /* 默认样式 */
+}
+
+/* ========================================
+   已删除的搜索记录（半透明显示）
+   ======================================== */
+.browser-history-item.deleted {
+    opacity: 0.5;
+    border-left: 3px solid rgba(255, 255, 255, 0.1);
+    position: relative;
+}
+
+.browser-history-item.deleted .browser-history-query {
+    text-decoration: line-through;
+    text-decoration-color: rgba(255, 255, 255, 0.3);
+}
+
+.browser-deleted-badge {
+    font-size: 9px;
+    color: rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.05);
+    padding: 2px 6px;
+    border-radius: 3px;
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+/* ========================================
+   Google地图类型
+   ======================================== */
+.browser-history-item.map .browser-history-icon {
+    background: rgba(100, 180, 100, 0.15);
+}
+
+.browser-history-item.map .browser-history-icon svg {
+    color: rgba(130, 200, 130, 0.8);
+}
+
+/* ========================================
+   无痕模式提示
+   ======================================== */
+.browser-incognito-hint {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    margin: 0 16px 12px;
+    background: rgba(100, 100, 100, 0.1);
+    border-radius: 8px;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.35);
+}
+
+.browser-incognito-hint svg {
+    width: 14px;
+    height: 14px;
+    color: rgba(255, 255, 255, 0.3);
+}
+
+/* ========================================
+   移动端适配
+   ======================================== */
+@media (max-width: 380px) {
+    .browser-search-bar {
+        padding: 12px;
+    }
+
+    .browser-search-input {
+        padding: 8px 14px;
+    }
+
+    .browser-history-list {
+        padding: 0 12px 12px;
+    }
+
+    .browser-history-item {
+        padding: 10px 12px;
+    }
+
+    .browser-history-query {
+        font-size: 12px;
+    }
+}

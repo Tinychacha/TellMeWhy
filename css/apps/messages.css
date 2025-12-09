@@ -1,6 +1,661 @@
 /* ========================================
    Messages App Styles
-   メッセージ
+   メッセージ（日式SNS风格）
    ======================================== */
 
-/* 聊天样式将在后续实现 */
+/* 消息容器 */
+.messages-app {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: linear-gradient(180deg,
+        rgba(20, 18, 28, 0.95) 0%,
+        rgba(30, 25, 40, 0.98) 100%);
+}
+
+/* ========================================
+   聊天列表视图
+   ======================================== */
+.chat-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 12px;
+}
+
+.chat-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.chat-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.chat-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 2px;
+}
+
+/* 聊天列表项 */
+.chat-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.chat-item:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+.chat-item:active {
+    transform: scale(0.98);
+}
+
+/* 聊天头像 */
+.chat-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 20px;
+    overflow: hidden;
+}
+
+.chat-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* 群聊头像 */
+.chat-avatar.group {
+    background: linear-gradient(135deg, rgba(180, 130, 200, 0.3), rgba(100, 150, 200, 0.3));
+}
+
+/* 聊天信息 */
+.chat-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.chat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 4px;
+}
+
+.chat-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.chat-time {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.35);
+}
+
+.chat-preview {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.45);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 未读标记 */
+.chat-unread {
+    min-width: 18px;
+    height: 18px;
+    background: rgba(220, 100, 100, 0.8);
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    color: white;
+    font-weight: 600;
+    padding: 0 5px;
+}
+
+/* ========================================
+   聊天详情视图（日式SNS风格）
+   ======================================== */
+.chat-view {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* 聊天头部 */
+.chat-view-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    flex-shrink: 0;
+}
+
+.chat-view-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+}
+
+.chat-view-name {
+    font-size: 15px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.chat-view-members {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+/* 消息列表 */
+.message-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.message-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.message-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.message-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 2px;
+}
+
+/* 日期分隔线 */
+.message-date-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 0;
+}
+
+.message-date-divider span {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.35);
+    background: rgba(255, 255, 255, 0.05);
+    padding: 4px 12px;
+    border-radius: 10px;
+}
+
+/* 消息项 */
+.message-item {
+    display: flex;
+    gap: 10px;
+    max-width: 85%;
+}
+
+/* 他人消息（左侧） */
+.message-item.other {
+    align-self: flex-start;
+}
+
+/* 自己消息（右侧） */
+.message-item.self {
+    align-self: flex-end;
+    flex-direction: row-reverse;
+}
+
+/* 消息头像 */
+.message-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+    align-self: flex-end;
+}
+
+/* 消息内容区 */
+.message-content-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.message-item.self .message-content-wrapper {
+    align-items: flex-end;
+}
+
+/* 发送者名字（群聊时显示） */
+.message-sender {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.5);
+    padding-left: 12px;
+}
+
+.message-item.self .message-sender {
+    padding-left: 0;
+    padding-right: 12px;
+}
+
+/* 消息气泡 */
+.message-bubble {
+    padding: 10px 14px;
+    border-radius: 18px;
+    font-size: 13px;
+    line-height: 1.5;
+    word-break: break-word;
+}
+
+/* 他人消息气泡 - 日式SNS风格 */
+.message-item.other .message-bubble {
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.9);
+    border-bottom-left-radius: 4px;
+}
+
+/* 自己消息气泡 - 绿色（LINE风格） */
+.message-item.self .message-bubble {
+    background: rgba(100, 200, 100, 0.25);
+    color: rgba(255, 255, 255, 0.95);
+    border-bottom-right-radius: 4px;
+}
+
+/* 消息时间和已读状态 */
+.message-meta {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.3);
+    padding: 0 4px;
+    align-self: flex-end;
+}
+
+.message-item.self .message-meta {
+    flex-direction: row-reverse;
+}
+
+/* 已读标记 */
+.message-read {
+    color: rgba(100, 200, 100, 0.7);
+    font-size: 9px;
+}
+
+/* ========================================
+   表情和贴图
+   ======================================== */
+
+/* 颜文字样式 */
+.kaomoji {
+    font-family: 'Noto Sans JP', sans-serif;
+}
+
+/* 表情包/贴图 */
+.message-sticker {
+    width: 120px;
+    height: 120px;
+    object-fit: contain;
+}
+
+.message-bubble.sticker {
+    background: transparent;
+    padding: 4px;
+}
+
+/* emoji放大显示（纯emoji消息） */
+.message-bubble.emoji-only {
+    background: transparent;
+    padding: 4px;
+    font-size: 32px;
+}
+
+/* ========================================
+   翻译标注
+   ======================================== */
+.message-translation {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.4);
+    padding: 4px 14px 0;
+    font-style: italic;
+}
+
+/* ========================================
+   输入框区域（装饰用）
+   ======================================== */
+.chat-input-area {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.chat-input {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    padding: 10px 16px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.35);
+}
+
+.chat-send-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(100, 200, 100, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.chat-send-btn svg {
+    width: 18px;
+    height: 18px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+/* ========================================
+   返回按钮
+   ======================================== */
+.chat-back-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 16px;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 13px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.chat-back-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.chat-back-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* ========================================
+   不同发送者的颜色标识
+   ======================================== */
+
+/* 高桥大叔 - 蓝色系 */
+.message-avatar.takahashi {
+    background: rgba(100, 150, 200, 0.3);
+}
+
+.message-sender.takahashi {
+    color: rgba(130, 170, 220, 0.8);
+}
+
+/* 松江（手机主人）- 绿色系 */
+.message-avatar.matsue {
+    background: rgba(100, 200, 100, 0.3);
+}
+
+/* 女主（用户）- 粉色系 */
+.message-avatar.user {
+    background: rgba(200, 130, 180, 0.3);
+}
+
+.message-sender.user {
+    color: rgba(220, 150, 200, 0.8);
+}
+
+/* ========================================
+   置顶和草稿样式
+   ======================================== */
+
+/* 置顶聊天 */
+.chat-item.pinned {
+    background: rgba(200, 160, 100, 0.05);
+    border-color: rgba(200, 160, 100, 0.15);
+}
+
+.chat-item.pinned:hover {
+    background: rgba(200, 160, 100, 0.08);
+}
+
+.chat-pin {
+    font-size: 10px;
+    margin-left: 4px;
+}
+
+/* 草稿样式 */
+.chat-draft {
+    color: rgba(220, 100, 100, 0.8);
+}
+
+.chat-input.has-draft {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* 三上头像 - 灰色系 */
+.message-avatar.mikami {
+    background: rgba(100, 100, 100, 0.3);
+}
+
+/* 桐生头像 - 金色系 */
+.message-avatar.kiryu {
+    background: rgba(200, 170, 100, 0.3);
+}
+
+/* ========================================
+   禁用的聊天项（装饰用）
+   ======================================== */
+.chat-item.disabled {
+    opacity: 0.5;
+    cursor: default;
+    pointer-events: none;
+}
+
+.chat-item.disabled:hover {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.05);
+    transform: none;
+}
+
+.chat-item.disabled:active {
+    transform: none;
+}
+
+/* ========================================
+   星空飘落特效（彩蛋）
+   ======================================== */
+.falling-stars-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: transparent;
+    pointer-events: auto;
+    cursor: pointer;
+    z-index: 1000;
+    overflow: hidden;
+    transition: background 3s ease, opacity 0.5s ease;
+}
+
+.falling-stars-overlay.darkening {
+    background: rgba(0, 0, 0, 0.85);
+}
+
+.falling-stars-overlay.fading-out {
+    opacity: 0;
+}
+
+.falling-star {
+    position: absolute;
+    top: -10px;
+    width: 4px;
+    height: 4px;
+    background: white;
+    border-radius: 50%;
+    box-shadow: 0 0 6px 2px rgba(255, 255, 255, 0.5);
+    animation: starFall linear forwards;
+}
+
+@keyframes starFall {
+    0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(100vh) rotate(360deg);
+        opacity: 0;
+    }
+}
+
+/* 结语文字 */
+.ending-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    animation: fadeInText 2s ease forwards;
+    opacity: 0;
+}
+
+.ending-line {
+    font-size: 18px;
+    color: rgba(255, 255, 255, 0.95);
+    font-weight: 300;
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+}
+
+.ending-line-sub {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.5);
+    font-weight: 300;
+}
+
+@keyframes fadeInText {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -40%);
+    }
+    100% {
+        opacity: 1;
+        transform: translate(-50%, -50%);
+    }
+}
+
+/* 点击关闭提示 */
+.ending-hint {
+    position: absolute;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.4);
+    animation: fadeInHint 1s ease forwards, pulseHint 2s ease-in-out infinite 1s;
+    opacity: 0;
+}
+
+@keyframes fadeInHint {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes pulseHint {
+    0%, 100% {
+        opacity: 0.4;
+    }
+    50% {
+        opacity: 0.7;
+    }
+}
+
+/* 发送按钮可点击状态 */
+.chat-send-btn[onclick] {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.chat-send-btn[onclick]:hover {
+    background: rgba(100, 200, 100, 0.5);
+    transform: scale(1.05);
+}
+
+.chat-send-btn[onclick]:active {
+    transform: scale(0.95);
+}
+
+/* ========================================
+   移动端适配
+   ======================================== */
+@media (max-width: 380px) {
+    .chat-list {
+        padding: 8px;
+    }
+
+    .chat-item {
+        padding: 10px;
+    }
+
+    .chat-avatar {
+        width: 42px;
+        height: 42px;
+    }
+
+    .message-list {
+        padding: 12px;
+    }
+
+    .message-bubble {
+        font-size: 12px;
+        padding: 8px 12px;
+    }
+
+    .ending-line {
+        font-size: 16px;
+    }
+
+    .ending-line-sub {
+        font-size: 11px;
+    }
+}
