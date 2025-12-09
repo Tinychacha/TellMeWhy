@@ -290,8 +290,8 @@
     z-index: 200;
     transform: translateY(100%);
     opacity: 0;
-    /* 安全区域适配 */
-    padding-top: env(safe-area-inset-top, 0);
+    /* 安全区域适配 - 确保顶部有足够空间避开状态栏 */
+    padding-top: max(50px, env(safe-area-inset-top, 50px));
     padding-bottom: env(safe-area-inset-bottom, 0);
     transition:
         transform 0.4s cubic-bezier(0.32, 0.72, 0, 1),
