@@ -271,6 +271,23 @@
         </div>
     </div>
 
+    <!-- 迷你播放器 -->
+    <div class="player-mini" id="player-mini" onclick="openMiniPlayer()">
+        <img class="player-mini-cover" id="player-mini-cover" src="Graph/BK/BJ643496_img_main.webp" alt="">
+        <div class="player-mini-info">
+            <div class="player-mini-title" id="player-mini-title">-</div>
+            <div class="player-mini-subtitle" id="player-mini-subtitle">-</div>
+        </div>
+        <button class="player-mini-play" id="player-mini-play" onclick="toggleMiniPlay(event)">
+            <svg viewBox="0 0 24 24" fill="currentColor" id="player-mini-play-icon">
+                <path d="M8 5v14l11-7z"/>
+            </svg>
+        </button>
+        <div class="player-mini-progress">
+            <div class="player-mini-progress-fill" id="player-mini-progress-fill"></div>
+        </div>
+    </div>
+
     <script>
         // ========================================
         // TELL ME WHY - マツエの携帯
@@ -286,10 +303,7 @@
         };
 
         const APP_PLACEHOLDERS = {
-            player: `<div class="app-placeholder">
-                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
-                <p>音声プレイヤー<br>準備中...</p>
-            </div>`,
+            player: null, // 播放器有专门的渲染逻辑
             messages: `<div class="app-placeholder">
                 <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/></svg>
                 <p>メッセージ<br>準備中...</p>
@@ -320,6 +334,14 @@
         let diaryDataLoaded = false;
         let diaryViewState = 'list'; // 'list' or 'detail'
 
+        // 格式化时间
+        function formatTime(seconds) {
+            if (!seconds || isNaN(seconds)) return '00:00';
+            const m = Math.floor(seconds / 60);
+            const s = Math.floor(seconds % 60);
+            return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        }
+
         document.addEventListener('DOMContentLoaded', async () => {
             homeScreen = document.getElementById('home-screen');
             appView = document.getElementById('app-view');
@@ -327,8 +349,11 @@
             appTitle = document.getElementById('app-title');
             backBtn = document.getElementById('back-btn');
 
-            // 预加载日记数据
-            await loadDiaryData();
+            // 预加载数据
+            await Promise.all([
+                loadDiaryData(),
+                loadPlayerData()
+            ]);
 
             // App图标点击
             document.querySelectorAll('.app-icon').forEach(icon => {
@@ -341,8 +366,30 @@
             // 返回按钮
             backBtn.addEventListener('click', closeApp);
 
-            // Escape键返回
+            // 键盘控制
             document.addEventListener('keydown', (e) => {
+                // 播放器键盘控制
+                if (currentApp === 'player' && playerViewState === 'playing') {
+                    const historyPanel = document.getElementById('player-history-panel');
+                    if (historyPanel && historyPanel.classList.contains('active')) {
+                        if (e.key === 'Escape') hidePlayerHistory();
+                        return;
+                    }
+
+                    if (e.code === 'Space') {
+                        e.preventDefault();
+                        togglePlayerPlay();
+                    } else if (e.code === 'ArrowLeft') {
+                        seekRelative(-5);
+                    } else if (e.code === 'ArrowRight') {
+                        seekRelative(5);
+                    } else if (e.key === 'Escape') {
+                        minimizePlayer();
+                    }
+                    return;
+                }
+
+                // 普通Escape返回
                 if (e.key === 'Escape' && currentApp) closeApp();
             });
 
@@ -357,7 +404,13 @@
             appTitle.textContent = APP_CONFIG[appId].title;
 
             // 根据不同app渲染不同内容
-            if (appId === 'diary') {
+            if (appId === 'player') {
+                // 播放器
+                if (!playerDataLoaded) {
+                    await loadPlayerData();
+                }
+                appContent.innerHTML = renderPlayerList();
+            } else if (appId === 'diary') {
                 // 确保数据已加载
                 if (!diaryDataLoaded) {
                     await loadDiaryData();
@@ -369,6 +422,9 @@
 
             homeScreen.classList.remove('active');
             appView.classList.add('active');
+
+            // 进入app时隐藏迷你播放器
+            hideMiniPlayer();
         }
 
         function closeApp() {
@@ -376,6 +432,9 @@
             appView.classList.remove('active');
             homeScreen.classList.add('active');
             setTimeout(() => { appContent.innerHTML = ''; }, 400);
+
+            // 如果有正在播放的曲目，显示迷你播放器
+            updateMiniPlayerVisibility();
         }
 
         function updateStatusTime() {
@@ -384,6 +443,884 @@
                 const now = new Date();
                 timeEl.textContent = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
             }
+        }
+
+        // ========================================
+        // プレイヤー App
+        // ========================================
+
+        let playerData = null;
+        let playerDataLoaded = false;
+        let currentTrack = null;
+        let currentSubtitles = [];
+        let currentSubtitleIndex = -1;
+        let subtitleHistory = [];
+        let isPlaying = false;
+        let playerViewState = 'list'; // 'list' or 'playing'
+        let currentPlaybackSpeed = 1;
+        let subtitleSearchQuery = '';
+        let subtitleMode = 'both'; // 'both', 'cn', 'jp'
+        const audio = new Audio();
+        const PLAYER_STORAGE_KEY = 'tmw_player_progress';
+
+        // 说话人头像配置
+        const speakerAvatars = {
+            '松江': 'Graph/BK/matsue_avatar.png',
+            '暴徒': '',
+            '高桥': ''
+        };
+
+        // 加载播放器数据
+        async function loadPlayerData() {
+            try {
+                const response = await fetch('data/tracks.json');
+                playerData = await response.json();
+                playerDataLoaded = true;
+                console.log('Player data loaded:', playerData.tracks.length, 'tracks');
+            } catch (e) {
+                console.error('Failed to load player data:', e);
+                playerData = null;
+                playerDataLoaded = false;
+            }
+        }
+
+        // 解析SRT字幕文件
+        async function loadSubtitles(subtitleFile) {
+            try {
+                const response = await fetch(subtitleFile);
+                const text = await response.text();
+                return parseSRT(text);
+            } catch (e) {
+                console.error('Failed to load subtitles:', e);
+                return [];
+            }
+        }
+
+        // 解析SRT格式
+        function parseSRT(srtText) {
+            const subtitles = [];
+            // 统一换行符为 \n，处理 Windows 的 \r\n
+            const normalizedText = srtText.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+            const blocks = normalizedText.trim().split(/\n\n+/);
+
+            for (const block of blocks) {
+                const lines = block.split('\n');
+                if (lines.length < 3) continue;
+
+                // 解析时间码
+                const timeMatch = lines[1].match(/(\d{2}):(\d{2}):(\d{2}),(\d{3})\s*-->\s*(\d{2}):(\d{2}):(\d{2}),(\d{3})/);
+                if (!timeMatch) continue;
+
+                const start = parseInt(timeMatch[1]) * 3600 + parseInt(timeMatch[2]) * 60 + parseInt(timeMatch[3]) + parseInt(timeMatch[4]) / 1000;
+                const end = parseInt(timeMatch[5]) * 3600 + parseInt(timeMatch[6]) * 60 + parseInt(timeMatch[7]) + parseInt(timeMatch[8]) / 1000;
+
+                // 中文和日文（去除可能残留的空白）
+                const cn = (lines[2] || '').trim();
+                const jp = (lines[3] || '').trim();
+
+                // 检测说话人
+                let speaker = null;
+                if (currentTrack) {
+                    speaker = detectSpeaker(cn, jp, start, currentTrack.id);
+                }
+
+                subtitles.push({ start, end, cn, jp, speaker });
+            }
+
+            return subtitles;
+        }
+
+        // 根据轨道和时间检测说话人
+        function detectSpeaker(cn, jp, startTime, trackId) {
+            // 各轨道的说话人规则
+            const trackRules = {
+                // 第一轨：正義の味方 - 松江救下女主，高桥介绍
+                1: [
+                    { time: [26, 66], speaker: '暴徒' },
+                    { time: [66, 72], speaker: '松江' },
+                    { time: [82, 127], speaker: '松江' },
+                    { time: [127, 130], speaker: '高桥' },
+                    { time: [134, 139], speaker: '松江' },
+                    { time: [139, 141], speaker: '高桥' },
+                    { time: [143, 218], speaker: '高桥' },
+                    { time: [218, 240], speaker: '松江' },
+                    { time: [240, 620], speaker: '松江' }
+                ],
+                // 第二轨：付和雷同 - 松江独白
+                2: [
+                    { time: [0, 300], speaker: '松江' }
+                ],
+                // 第三轨：望郷の空 - 松江独白
+                3: [
+                    { time: [0, 300], speaker: '松江' }
+                ],
+                // 第四轨：偽薬を飲み、吊り橋を渡る - 松江和女主约会/对话
+                4: [
+                    { time: [0, 800], speaker: '松江' }
+                ],
+                // 第五轨：正義の見方 - 松江打电话/对话
+                5: [
+                    { time: [0, 300], speaker: '松江' }
+                ],
+                // 第六轨：COllaPse - 松江独白/剧情
+                6: [
+                    { time: [0, 2500], speaker: '松江' }
+                ],
+                // 第七轨：久遠 - 松江独白
+                7: [
+                    { time: [0, 500], speaker: '松江' }
+                ],
+                // 第九轨：九仞の功を一簣に虧く - 松江独白
+                9: [
+                    { time: [0, 1100], speaker: '松江' }
+                ]
+            };
+
+            const rules = trackRules[trackId];
+            if (!rules) return null;
+
+            for (const rule of rules) {
+                if (startTime >= rule.time[0] && startTime < rule.time[1]) {
+                    return rule.speaker;
+                }
+            }
+            return null;
+        }
+
+        // 渲染播放器列表
+        function renderPlayerList() {
+            playerViewState = 'list';
+            if (!playerData) {
+                return `<div class="app-placeholder">
+                    <div class="player-loading-spinner"></div>
+                    <p>読み込み中...</p>
+                </div>`;
+            }
+
+            const progress = getAllPlayerProgress();
+
+            let html = `
+                <div class="player-app">
+                    <div class="player-track-list">
+                        <div class="player-album-header">
+                            <div class="player-cover-container">
+                                <div class="player-cover-glow"></div>
+                                <img class="player-cover" src="Graph/BK/BJ643496_img_main.webp" alt="Cover" onerror="this.src='Graph/IMG_8477.JPEG'">
+                            </div>
+                            <h1 class="player-album-title">${playerData.albumTitle}</h1>
+                            <p class="player-album-artist">${playerData.artist}</p>
+                        </div>
+                        <div class="player-list-header">
+                            <span class="player-list-title">TRACKS</span>
+                            <span class="player-track-count">${playerData.tracks.length}曲</span>
+                        </div>
+            `;
+
+            playerData.tracks.forEach((track, index) => {
+                const trackProgress = progress[track.id];
+                const hasProgress = trackProgress && trackProgress.time > 10;
+                const isCurrentTrack = currentTrack && currentTrack.id === track.id;
+
+                let progressHint = '';
+                if (hasProgress) {
+                    progressHint = `<div class="player-track-progress-hint">前回 ${formatTime(trackProgress.time)}</div>`;
+                }
+
+                html += `
+                    <div class="player-track-item ${isCurrentTrack ? 'playing' : ''} ${hasProgress ? 'has-progress' : ''}"
+                         data-track-id="${track.id}" onclick="playTrack(${track.id})">
+                        <span class="player-track-number">${String(index + 1).padStart(2, '0')}</span>
+                        <div class="player-now-playing-indicator">
+                            <span></span><span></span><span></span>
+                        </div>
+                        <div class="player-track-info">
+                            <div class="player-track-title-row">
+                                <span class="player-track-name">${track.title}</span>
+                                <span class="player-track-name-zh">${track.titleZh}</span>
+                            </div>
+                            ${progressHint}
+                        </div>
+                        <span class="player-track-duration">${track.duration}</span>
+                    </div>
+                `;
+            });
+
+            html += `
+                    </div>
+                    <!-- 播放中视图 -->
+                    <div class="player-now-view" id="player-now-view">
+                        <div class="player-now-header">
+                            <button class="player-minimize-btn" onclick="minimizePlayer()">
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/>
+                                </svg>
+                            </button>
+                            <div class="player-now-track-info">
+                                <div class="player-now-track-num" id="player-track-num">Track 01</div>
+                                <div class="player-now-track-title" id="player-track-title">-</div>
+                            </div>
+                            <button class="player-history-btn" onclick="showPlayerHistory()">回看</button>
+                        </div>
+                        <div class="player-now-cover-area">
+                            <div class="player-now-cover-bg" id="player-cover-bg"></div>
+                            <div class="player-now-cover-wrapper">
+                                <img class="player-now-cover-img" id="player-cover-img" src="Graph/BK/BJ643496_img_main.webp" alt="Cover" onerror="this.src='Graph/IMG_8477.JPEG'">
+                                <div class="player-cover-reflection">
+                                    <img src="Graph/BK/BJ643496_img_main.webp" alt="" onerror="this.src='Graph/IMG_8477.JPEG'">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="player-subtitle-area">
+                            <div class="player-subtitle-speaker-wrapper" id="player-speaker-wrapper">
+                                <img class="player-speaker-avatar" id="player-speaker-avatar" src="" alt="" style="display:none">
+                                <div class="player-subtitle-speaker" id="player-speaker"></div>
+                            </div>
+                            <div class="player-subtitle-cn" id="player-subtitle-cn"></div>
+                            <div class="player-subtitle-jp" id="player-subtitle-jp"></div>
+                        </div>
+                        <div class="player-controls-area">
+                            <div class="player-progress-container">
+                                <div class="player-progress-bar" id="player-progress-bar" onclick="seekToPosition(event)" onmousemove="showTimeTooltip(event)" onmouseleave="hideTimeTooltip()">
+                                    <div class="player-time-tooltip" id="player-time-tooltip">00:00</div>
+                                    <div class="player-progress-fill" id="player-progress-fill">
+                                        <div class="player-progress-handle"></div>
+                                    </div>
+                                </div>
+                                <div class="player-time-display">
+                                    <span id="player-current-time">00:00</span>
+                                    <span id="player-total-time">00:00</span>
+                                </div>
+                            </div>
+                            <div class="player-main-controls">
+                                <button class="player-ctrl-btn player-seek-btn" onclick="seekRelative(-10)">
+                                    <svg viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M12.5 3C17.15 3 21.08 6.03 22.47 10.22L20.1 11C19.05 7.81 16.04 5.5 12.5 5.5C10.54 5.5 8.77 6.22 7.38 7.38L10 10H3V3L5.6 5.6C7.45 4 9.85 3 12.5 3M10 12V22H8V14H6V12H10M18 14V20C18 21.11 17.11 22 16 22H14C12.9 22 12 21.1 12 20V14C12 12.9 12.9 12 14 12H16C17.11 12 18 12.9 18 14M14 14V20H16V14H14Z"/>
+                                    </svg>
+                                </button>
+                                <button class="player-ctrl-btn player-skip-btn" onclick="playPrevTrack()">
+                                    <svg viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
+                                    </svg>
+                                </button>
+                                <button class="player-ctrl-btn player-play-btn" id="player-play-btn" onclick="togglePlayerPlay()">
+                                    <svg viewBox="0 0 24 24" fill="currentColor" id="player-play-icon">
+                                        <path d="M8 5v14l11-7z"/>
+                                    </svg>
+                                </button>
+                                <button class="player-ctrl-btn player-skip-btn" onclick="playNextTrack()">
+                                    <svg viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
+                                    </svg>
+                                </button>
+                                <button class="player-ctrl-btn player-seek-btn" onclick="seekRelative(10)">
+                                    <svg viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M11.5 3C6.85 3 2.92 6.03 1.53 10.22L3.9 11C4.95 7.81 7.96 5.5 11.5 5.5C13.46 5.5 15.23 6.22 16.62 7.38L14 10H21V3L18.4 5.6C16.55 4 14.15 3 11.5 3M10 12V22H8V14H6V12H10M18 14V20C18 21.11 17.11 22 16 22H14C12.9 22 12 21.1 12 20V14C12 12.9 12.9 12 14 12H16C17.11 12 18 12.9 18 14M14 14V20H16V14H14Z"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="player-aux-controls">
+                                <div class="player-aux-left">
+                                    <div class="player-subtitle-mode-wrapper">
+                                        <button class="player-subtitle-mode-btn" id="player-subtitle-mode-btn" onclick="toggleSubtitleMode()">双语</button>
+                                    </div>
+                                </div>
+                                <div class="player-aux-right">
+                                    <div class="player-speed-wrapper">
+                                        <button class="player-speed-btn" id="player-speed-btn" onclick="toggleSpeedMenu()">1.0x</button>
+                                        <div class="player-speed-menu" id="player-speed-menu">
+                                            <button class="player-speed-option" onclick="setPlaybackSpeed(0.5)">0.5x</button>
+                                            <button class="player-speed-option" onclick="setPlaybackSpeed(0.75)">0.75x</button>
+                                            <button class="player-speed-option active" onclick="setPlaybackSpeed(1)">1.0x</button>
+                                            <button class="player-speed-option" onclick="setPlaybackSpeed(1.25)">1.25x</button>
+                                            <button class="player-speed-option" onclick="setPlaybackSpeed(1.5)">1.5x</button>
+                                            <button class="player-speed-option" onclick="setPlaybackSpeed(2)">2.0x</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 历史面板 -->
+                        <div class="player-history-panel" id="player-history-panel">
+                            <div class="player-history-header">
+                                <h2 class="player-history-title">字幕回看</h2>
+                                <button class="player-history-close" onclick="hidePlayerHistory()">×</button>
+                            </div>
+                            <div class="player-history-search">
+                                <div class="player-search-wrapper" id="player-search-wrapper">
+                                    <svg class="player-search-icon" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                                    </svg>
+                                    <input type="text" class="player-search-input" id="player-search-input" placeholder="搜索字幕..." oninput="searchSubtitles(this.value)">
+                                    <button class="player-search-clear" onclick="clearSubtitleSearch()">×</button>
+                                </div>
+                                <div class="player-search-results-info" id="player-search-results-info"></div>
+                            </div>
+                            <div class="player-history-list" id="player-history-list"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            return html;
+        }
+
+        // 播放曲目
+        async function playTrack(trackId) {
+            const track = playerData.tracks.find(t => t.id === trackId);
+            if (!track) return;
+
+            currentTrack = track;
+            subtitleHistory = [];
+            currentSubtitleIndex = -1;
+
+            // 加载字幕
+            currentSubtitles = await loadSubtitles(track.subtitleFile);
+
+            // 更新UI
+            const trackIndex = playerData.tracks.indexOf(track);
+            document.getElementById('player-track-num').textContent = `Track ${String(trackIndex + 1).padStart(2, '0')}`;
+            document.getElementById('player-track-title').textContent = track.title;
+            document.getElementById('player-cover-img').src = 'Graph/BK/BJ643496_img_main.webp';
+            document.getElementById('player-cover-bg').style.backgroundImage = 'url(Graph/BK/cover.webp)';
+
+            // 清空字幕
+            clearPlayerSubtitle();
+
+            // 加载音频
+            audio.src = track.audioFile;
+            audio.load();
+
+            // 恢复进度
+            const saved = getPlayerProgress(track.id);
+            if (saved && saved.time > 10) {
+                audio.currentTime = saved.time;
+            }
+
+            // 显示播放视图
+            showPlayerView();
+
+            // 更新曲目列表中的播放状态
+            document.querySelectorAll('.player-track-item').forEach(item => {
+                item.classList.remove('playing');
+                if (parseInt(item.dataset.trackId) === trackId) {
+                    item.classList.add('playing');
+                }
+            });
+        }
+
+        // 显示播放视图
+        function showPlayerView() {
+            playerViewState = 'playing';
+            const view = document.getElementById('player-now-view');
+            if (view) {
+                view.classList.add('active');
+            }
+        }
+
+        // 最小化播放器
+        function minimizePlayer() {
+            playerViewState = 'list';
+            const view = document.getElementById('player-now-view');
+            if (view) {
+                view.classList.remove('active');
+            }
+        }
+
+        // 播放/暂停
+        function togglePlayerPlay() {
+            if (isPlaying) {
+                audio.pause();
+                isPlaying = false;
+            } else {
+                audio.play().catch(() => {});
+                isPlaying = true;
+            }
+            updatePlayerPlayButton();
+            updatePlayerViewState();
+        }
+
+        function updatePlayerPlayButton() {
+            const icon = document.getElementById('player-play-icon');
+            if (!icon) return;
+            if (isPlaying) {
+                icon.innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
+            } else {
+                icon.innerHTML = '<path d="M8 5v14l11-7z"/>';
+            }
+        }
+
+        function updatePlayerViewState() {
+            const view = document.getElementById('player-now-view');
+            if (view) {
+                if (isPlaying) {
+                    view.classList.add('playing');
+                } else {
+                    view.classList.remove('playing');
+                }
+            }
+        }
+
+        // 快进/快退
+        function seekRelative(seconds) {
+            audio.currentTime = Math.max(0, Math.min(audio.duration || 0, audio.currentTime + seconds));
+        }
+
+        // 点击进度条跳转
+        function seekToPosition(e) {
+            const bar = e.currentTarget;
+            const rect = bar.getBoundingClientRect();
+            const percent = (e.clientX - rect.left) / rect.width;
+            audio.currentTime = percent * (audio.duration || 0);
+        }
+
+        // 上一曲/下一曲
+        function playPrevTrack() {
+            if (!currentTrack || !playerData) return;
+            const currentIndex = playerData.tracks.findIndex(t => t.id === currentTrack.id);
+            if (currentIndex > 0) {
+                playTrack(playerData.tracks[currentIndex - 1].id);
+            }
+        }
+
+        function playNextTrack() {
+            if (!currentTrack || !playerData) return;
+            const currentIndex = playerData.tracks.findIndex(t => t.id === currentTrack.id);
+            if (currentIndex < playerData.tracks.length - 1) {
+                playTrack(playerData.tracks[currentIndex + 1].id);
+            }
+        }
+
+        // 字幕更新
+        function updatePlayerSubtitle(time) {
+            if (!currentSubtitles.length) return;
+
+            let foundIndex = -1;
+            for (let i = 0; i < currentSubtitles.length; i++) {
+                if (time >= currentSubtitles[i].start && time < currentSubtitles[i].end) {
+                    foundIndex = i;
+                    break;
+                }
+            }
+
+            if (foundIndex !== currentSubtitleIndex) {
+                currentSubtitleIndex = foundIndex;
+
+                if (foundIndex >= 0) {
+                    const sub = currentSubtitles[foundIndex];
+                    showPlayerSubtitle(sub);
+
+                    // 添加到历史
+                    if (!subtitleHistory.find(h => h.index === foundIndex)) {
+                        subtitleHistory.push({ index: foundIndex, ...sub });
+                    }
+                } else {
+                    clearPlayerSubtitle();
+                }
+            }
+        }
+
+        function showPlayerSubtitle(sub) {
+            const speakerWrapper = document.getElementById('player-speaker-wrapper');
+            const speakerEl = document.getElementById('player-speaker');
+            const avatarEl = document.getElementById('player-speaker-avatar');
+            const cnEl = document.getElementById('player-subtitle-cn');
+            const jpEl = document.getElementById('player-subtitle-jp');
+
+            if (!speakerEl || !cnEl || !jpEl) return;
+
+            // 电影字幕风格：直接切换，无延迟
+            if (sub.speaker) {
+                speakerEl.textContent = sub.speaker;
+                speakerEl.setAttribute('data-speaker', sub.speaker);
+
+                // 设置头像
+                const avatarSrc = speakerAvatars[sub.speaker];
+                if (avatarEl) {
+                    if (avatarSrc) {
+                        avatarEl.src = avatarSrc;
+                        avatarEl.setAttribute('data-speaker', sub.speaker);
+                        avatarEl.style.display = 'block';
+                    } else {
+                        avatarEl.style.display = 'none';
+                    }
+                }
+
+                if (speakerWrapper) speakerWrapper.classList.add('visible');
+            } else {
+                if (speakerWrapper) speakerWrapper.classList.remove('visible');
+            }
+
+            cnEl.textContent = sub.cn;
+            jpEl.textContent = sub.jp;
+            cnEl.classList.add('visible');
+            jpEl.classList.add('visible');
+        }
+
+        function clearPlayerSubtitle() {
+            const speakerWrapper = document.getElementById('player-speaker-wrapper');
+            const cnEl = document.getElementById('player-subtitle-cn');
+            const jpEl = document.getElementById('player-subtitle-jp');
+
+            if (speakerWrapper) speakerWrapper.classList.remove('visible');
+            if (cnEl) cnEl.classList.remove('visible');
+            if (jpEl) jpEl.classList.remove('visible');
+        }
+
+        // 回看历史
+        function showPlayerHistory() {
+            const panel = document.getElementById('player-history-panel');
+            const list = document.getElementById('player-history-list');
+            if (!panel || !list) return;
+
+            // 清空搜索
+            subtitleSearchQuery = '';
+            const searchInput = document.getElementById('player-search-input');
+            if (searchInput) searchInput.value = '';
+            const searchWrapper = document.getElementById('player-search-wrapper');
+            if (searchWrapper) searchWrapper.classList.remove('has-value');
+            const resultsInfo = document.getElementById('player-search-results-info');
+            if (resultsInfo) resultsInfo.textContent = '';
+
+            renderSubtitleList();
+            panel.classList.add('active');
+        }
+
+        function renderSubtitleList(searchQuery = '') {
+            const list = document.getElementById('player-history-list');
+            if (!list) return;
+
+            // 决定数据源：搜索时用全部字幕，否则用历史
+            let items = searchQuery ? currentSubtitles : subtitleHistory.slice().reverse();
+
+            // 搜索过滤
+            if (searchQuery) {
+                const query = searchQuery.toLowerCase();
+                items = items.filter(item =>
+                    item.cn.toLowerCase().includes(query) ||
+                    item.jp.toLowerCase().includes(query)
+                );
+            }
+
+            if (items.length === 0) {
+                if (searchQuery) {
+                    list.innerHTML = '<div class="player-history-empty">検索結果がありません</div>';
+                } else {
+                    list.innerHTML = '<div class="player-history-empty">まだ再生履歴がありません</div>';
+                }
+            } else {
+                list.innerHTML = items.map(item => {
+                    let cn = item.cn;
+                    let jp = item.jp;
+
+                    // 高亮搜索词
+                    if (searchQuery) {
+                        const regex = new RegExp(`(${escapeRegex(searchQuery)})`, 'gi');
+                        cn = cn.replace(regex, '<span class="player-history-highlight">$1</span>');
+                        jp = jp.replace(regex, '<span class="player-history-highlight">$1</span>');
+                    }
+
+                    return `
+                        <div class="player-history-item" onclick="jumpToSubtitle(${item.start})">
+                            <div class="player-history-time">${formatTime(item.start)}</div>
+                            ${item.speaker ? `<div class="player-history-speaker" data-speaker="${item.speaker}">${item.speaker}</div>` : ''}
+                            <div class="player-history-cn">${cn}</div>
+                            <div class="player-history-jp">${jp}</div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // 更新结果信息
+            const resultsInfo = document.getElementById('player-search-results-info');
+            if (resultsInfo && searchQuery) {
+                resultsInfo.textContent = `${items.length} 件の結果`;
+            } else if (resultsInfo) {
+                resultsInfo.textContent = '';
+            }
+        }
+
+        function escapeRegex(str) {
+            return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+
+        function searchSubtitles(query) {
+            subtitleSearchQuery = query;
+            const searchWrapper = document.getElementById('player-search-wrapper');
+            if (searchWrapper) {
+                searchWrapper.classList.toggle('has-value', query.length > 0);
+            }
+            renderSubtitleList(query);
+        }
+
+        function clearSubtitleSearch() {
+            const searchInput = document.getElementById('player-search-input');
+            if (searchInput) {
+                searchInput.value = '';
+                searchSubtitles('');
+            }
+        }
+
+        function hidePlayerHistory() {
+            const panel = document.getElementById('player-history-panel');
+            if (panel) panel.classList.remove('active');
+        }
+
+        function jumpToSubtitle(time) {
+            audio.currentTime = time;
+            hidePlayerHistory();
+            if (!isPlaying) togglePlayerPlay();
+        }
+
+        // 播放速度控制
+        function toggleSpeedMenu() {
+            const menu = document.getElementById('player-speed-menu');
+            if (menu) {
+                menu.classList.toggle('active');
+            }
+        }
+
+        function setPlaybackSpeed(speed) {
+            currentPlaybackSpeed = speed;
+            audio.playbackRate = speed;
+
+            // 更新按钮文字
+            const btn = document.getElementById('player-speed-btn');
+            if (btn) {
+                btn.textContent = speed === 1 ? '1.0x' : speed + 'x';
+                btn.classList.toggle('active', speed !== 1);
+            }
+
+            // 更新菜单选中状态
+            const options = document.querySelectorAll('.player-speed-option');
+            options.forEach(opt => {
+                const optSpeed = parseFloat(opt.textContent);
+                opt.classList.toggle('active', optSpeed === speed);
+            });
+
+            // 关闭菜单
+            const menu = document.getElementById('player-speed-menu');
+            if (menu) menu.classList.remove('active');
+        }
+
+        // 字幕显示模式切换
+        function toggleSubtitleMode() {
+            const modes = ['both', 'cn', 'jp'];
+            const labels = { 'both': '双语', 'cn': '中文', 'jp': '日本語' };
+            const currentIndex = modes.indexOf(subtitleMode);
+            subtitleMode = modes[(currentIndex + 1) % modes.length];
+
+            // 更新按钮文字
+            const btn = document.getElementById('player-subtitle-mode-btn');
+            if (btn) {
+                btn.textContent = labels[subtitleMode];
+            }
+
+            // 更新字幕显示
+            updateSubtitleVisibility();
+        }
+
+        function updateSubtitleVisibility() {
+            const cnEl = document.getElementById('player-subtitle-cn');
+            const jpEl = document.getElementById('player-subtitle-jp');
+            if (!cnEl || !jpEl) return;
+
+            // 根据模式显示/隐藏
+            if (subtitleMode === 'both') {
+                cnEl.style.display = '';
+                jpEl.style.display = '';
+            } else if (subtitleMode === 'cn') {
+                cnEl.style.display = '';
+                jpEl.style.display = 'none';
+            } else if (subtitleMode === 'jp') {
+                cnEl.style.display = 'none';
+                jpEl.style.display = '';
+            }
+        }
+
+        // 进度条时间预览
+        function showTimeTooltip(event) {
+            const bar = event.currentTarget;
+            const tooltip = document.getElementById('player-time-tooltip');
+            if (!tooltip || !audio.duration) return;
+
+            const rect = bar.getBoundingClientRect();
+            const percent = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
+            const time = percent * audio.duration;
+
+            tooltip.textContent = formatTime(time);
+            tooltip.style.left = (percent * 100) + '%';
+        }
+
+        function hideTimeTooltip() {
+            // Tooltip hides via CSS when not hovering
+        }
+
+        // 点击页面其他地方关闭速度菜单
+        document.addEventListener('click', (e) => {
+            const speedWrapper = document.querySelector('.player-speed-wrapper');
+            const menu = document.getElementById('player-speed-menu');
+            if (speedWrapper && menu && !speedWrapper.contains(e.target)) {
+                menu.classList.remove('active');
+            }
+        });
+
+        // 进度保存
+        function savePlayerProgress() {
+            if (!currentTrack) return;
+            try {
+                let data = JSON.parse(localStorage.getItem(PLAYER_STORAGE_KEY) || '{}');
+                data[currentTrack.id] = {
+                    time: audio.currentTime,
+                    savedAt: Date.now()
+                };
+                localStorage.setItem(PLAYER_STORAGE_KEY, JSON.stringify(data));
+            } catch(e) {}
+        }
+
+        function getPlayerProgress(trackId) {
+            try {
+                const data = JSON.parse(localStorage.getItem(PLAYER_STORAGE_KEY) || '{}');
+                return data[trackId] || null;
+            } catch(e) {
+                return null;
+            }
+        }
+
+        function getAllPlayerProgress() {
+            try {
+                return JSON.parse(localStorage.getItem(PLAYER_STORAGE_KEY) || '{}');
+            } catch(e) {
+                return {};
+            }
+        }
+
+        // 音频事件监听
+        audio.addEventListener('timeupdate', () => {
+            const currentTime = audio.currentTime;
+            const duration = audio.duration || 0;
+
+            // 进度条
+            if (duration > 0) {
+                const percent = (currentTime / duration) * 100;
+                const fillEl = document.getElementById('player-progress-fill');
+                if (fillEl) fillEl.style.width = percent + '%';
+            }
+
+            // 时间显示
+            const currentTimeEl = document.getElementById('player-current-time');
+            if (currentTimeEl) currentTimeEl.textContent = formatTime(currentTime);
+
+            // 字幕
+            updatePlayerSubtitle(currentTime);
+
+            // 迷你播放器进度
+            updateMiniPlayerProgress();
+        });
+
+        audio.addEventListener('loadedmetadata', () => {
+            const totalTimeEl = document.getElementById('player-total-time');
+            if (totalTimeEl) totalTimeEl.textContent = formatTime(audio.duration);
+        });
+
+        audio.addEventListener('ended', () => {
+            isPlaying = false;
+            updatePlayerPlayButton();
+            updatePlayerViewState();
+            savePlayerProgress();
+            // 自动播放下一曲
+            playNextTrack();
+        });
+
+        audio.addEventListener('play', () => {
+            isPlaying = true;
+            updatePlayerPlayButton();
+            updatePlayerViewState();
+            updateMiniPlayButton();
+        });
+
+        audio.addEventListener('pause', () => {
+            isPlaying = false;
+            updatePlayerPlayButton();
+            updatePlayerViewState();
+            updateMiniPlayButton();
+        });
+
+        // 定期保存进度
+        setInterval(savePlayerProgress, 5000);
+
+        // ========================================
+        // 迷你播放器
+        // ========================================
+
+        function updateMiniPlayerVisibility() {
+            const mini = document.getElementById('player-mini');
+            if (!mini) return;
+
+            // 有曲目且不在播放器app内时显示
+            if (currentTrack && currentApp !== 'player') {
+                mini.classList.add('visible');
+                updateMiniPlayerInfo();
+            } else {
+                mini.classList.remove('visible');
+            }
+        }
+
+        function hideMiniPlayer() {
+            const mini = document.getElementById('player-mini');
+            if (mini) mini.classList.remove('visible');
+        }
+
+        function updateMiniPlayerInfo() {
+            if (!currentTrack) return;
+
+            const titleEl = document.getElementById('player-mini-title');
+            const subtitleEl = document.getElementById('player-mini-subtitle');
+            const coverEl = document.getElementById('player-mini-cover');
+
+            if (titleEl) titleEl.textContent = currentTrack.title;
+            if (subtitleEl) subtitleEl.textContent = currentTrack.titleZh;
+            if (coverEl) coverEl.src = 'Graph/BK/BJ643496_img_main.webp';
+
+            updateMiniPlayButton();
+        }
+
+        function updateMiniPlayerProgress() {
+            if (!currentTrack || !audio.duration) return;
+
+            const percent = (audio.currentTime / audio.duration) * 100;
+            const fillEl = document.getElementById('player-mini-progress-fill');
+            if (fillEl) fillEl.style.width = percent + '%';
+        }
+
+        function updateMiniPlayButton() {
+            const icon = document.getElementById('player-mini-play-icon');
+            if (!icon) return;
+            if (isPlaying) {
+                icon.innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
+            } else {
+                icon.innerHTML = '<path d="M8 5v14l11-7z"/>';
+            }
+        }
+
+        function openMiniPlayer() {
+            openApp('player');
+            // 稍后显示播放视图并更新信息
+            setTimeout(() => {
+                if (currentTrack) {
+                    showPlayerView();
+                    // 更新播放界面信息
+                    const trackIndex = playerData.tracks.findIndex(t => t.id === currentTrack.id);
+                    document.getElementById('player-track-num').textContent = `Track ${String(trackIndex + 1).padStart(2, '0')}`;
+                    document.getElementById('player-track-title').textContent = currentTrack.title;
+                    document.getElementById('player-total-time').textContent = formatTime(audio.duration);
+                }
+            }, 100);
+        }
+
+        function toggleMiniPlay(event) {
+            event.stopPropagation(); // 阻止冒泡到父元素的点击事件
+            togglePlayerPlay();
+            updateMiniPlayButton();
         }
 
         // ========================================

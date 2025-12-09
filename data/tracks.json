@@ -1,0 +1,95 @@
+{
+  "albumTitle": "TELL ME WHY?",
+  "artist": "CV: 猿飛総司",
+  "tracks": [
+    {
+      "id": 1,
+      "title": "正義の味方",
+      "titleZh": "正义的伙伴",
+      "duration": "10:13",
+      "audioFile": "audios/01 正義の味方.mp3",
+      "subtitleFile": "audios/01 正義の味方.txt"
+    },
+    {
+      "id": 2,
+      "title": "付和雷同",
+      "titleZh": "随声附和",
+      "duration": "04:35",
+      "audioFile": "audios/02 付和雷同.mp3",
+      "subtitleFile": "audios/02 付和雷同.txt"
+    },
+    {
+      "id": 3,
+      "title": "望郷の空",
+      "titleZh": "望乡之空",
+      "duration": "04:32",
+      "audioFile": "audios/03 望郷の空.mp3",
+      "subtitleFile": "audios/03 望郷の空.txt"
+    },
+    {
+      "id": 4,
+      "title": "偽薬を飲み、吊り橋を渡る",
+      "titleZh": "服下安慰剂，跨过吊桥",
+      "duration": "12:16",
+      "audioFile": "audios/04 偽薬を飲み、吊り橋を渡る.mp3",
+      "subtitleFile": "audios/04 偽薬を飲み、吊り橋を渡る.txt"
+    },
+    {
+      "id": 5,
+      "title": "正義の見方",
+      "titleZh": "正义的视角",
+      "duration": "04:45",
+      "audioFile": "audios/05 正義の見方.mp3",
+      "subtitleFile": "audios/05 正義の見方.txt"
+    },
+    {
+      "id": 6,
+      "title": "COllaPse",
+      "titleZh": "崩塌",
+      "duration": "40:02",
+      "audioFile": "audios/06 COllaPse.mp3",
+      "subtitleFile": "audios/06 COllaPse.txt"
+    },
+    {
+      "id": 7,
+      "title": "久遠",
+      "titleZh": "久远",
+      "duration": "07:25",
+      "audioFile": "audios/07 久遠.mp3",
+      "subtitleFile": "audios/07 久遠.txt"
+    },
+    {
+      "id": 8,
+      "title": "キャストトーク",
+      "titleZh": "演员访谈",
+      "duration": "03:12",
+      "audioFile": "audios/08 キャストトーク.mp3",
+      "subtitleFile": "audios/08 キャストトーク.txt"
+    },
+    {
+      "id": 9,
+      "title": "九仞の功を一簣に虧く",
+      "titleZh": "功亏一篑",
+      "duration": "16:55",
+      "audioFile": "audios/09 九仞の功を一簣に虧く.mp3",
+      "subtitleFile": "audios/09 九仞の功を一簣に虧く.txt"
+    }
+  ],
+  "speakers": {
+    "松江": {
+      "name": "松江",
+      "nameZh": "松江",
+      "color": "#e8945a"
+    },
+    "暴徒": {
+      "name": "暴徒",
+      "nameZh": "暴徒",
+      "color": "#d4606a"
+    },
+    "高桥": {
+      "name": "高桥",
+      "nameZh": "高桥",
+      "color": "#8b6b8a"
+    }
+  }
+}
