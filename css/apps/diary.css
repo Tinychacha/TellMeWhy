@@ -1,6 +1,6 @@
 /* ========================================
    Diary App Styles
-   日記
+   日記 - 黄昏夕暮れテーマ
    ======================================== */
 
 /* 日记列表容器 */
@@ -10,10 +10,10 @@
     gap: 12px;
 }
 
-/* 日记条目卡片 */
+/* 日记条目卡片 - 带夕暮れ色调 */
 .diary-entry {
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 245, 235, 0.04);
+    border: 1px solid rgba(232, 148, 90, 0.1);
     border-radius: 14px;
     padding: 16px 18px;
     cursor: pointer;
@@ -22,6 +22,7 @@
     overflow: hidden;
 }
 
+/* 左侧强调线 - 夕暮れグラデーション */
 .diary-entry::before {
     content: '';
     position: absolute;
@@ -29,14 +30,15 @@
     left: 0;
     width: 3px;
     height: 100%;
-    background: linear-gradient(180deg, #a8d0d4 0%, #6ab0b8 100%);
-    opacity: 0.6;
+    background: linear-gradient(180deg, #e8945a 0%, #d4707a 50%, #8b6b8a 100%);
+    opacity: 0.5;
     transition: opacity 0.25s ease;
 }
 
 .diary-entry:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(232, 148, 90, 0.08);
     transform: translateX(4px);
+    border-color: rgba(232, 148, 90, 0.2);
 }
 
 .diary-entry:hover::before {
@@ -47,11 +49,11 @@
     transform: translateX(4px) scale(0.98);
 }
 
-/* 日记序号 */
+/* 日记序号 - 夕暮れオレンジ */
 .diary-number {
     font-size: 11px;
     font-weight: 400;
-    color: rgba(255, 255, 255, 0.4);
+    color: rgba(232, 148, 90, 0.6);
     letter-spacing: 1px;
     margin-bottom: 6px;
 }
@@ -89,13 +91,13 @@
     text-align: center;
     margin-bottom: 32px;
     padding-bottom: 24px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid rgba(232, 148, 90, 0.15);
 }
 
 .diary-detail-number {
     font-size: 12px;
     font-weight: 400;
-    color: rgba(255, 255, 255, 0.4);
+    color: rgba(232, 148, 90, 0.6);
     letter-spacing: 2px;
     margin-bottom: 8px;
 }
@@ -130,17 +132,17 @@
     letter-spacing: 0.5px;
 }
 
-/* 中文翻译 */
+/* 中文翻译 - 带夕暮れ色调的边线 */
 .diary-zh {
     font-size: 12px;
     font-weight: 300;
-    color: rgba(255, 255, 255, 0.45);
+    color: rgba(212, 204, 196, 0.55);
     line-height: 1.6;
     padding-left: 12px;
-    border-left: 2px solid rgba(255, 255, 255, 0.1);
+    border-left: 2px solid rgba(232, 148, 90, 0.2);
 }
 
-/* 返回按钮 */
+/* 返回按钮 - 夕暮れスタイル */
 .diary-back {
     display: inline-flex;
     align-items: center;
@@ -150,14 +152,15 @@
     padding: 10px 16px;
     margin-bottom: 16px;
     border-radius: 10px;
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(232, 148, 90, 0.08);
+    border: 1px solid rgba(232, 148, 90, 0.15);
     transition: all 0.2s ease;
     cursor: pointer;
-    border: none;
 }
 
 .diary-back:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(232, 148, 90, 0.15);
+    border-color: rgba(232, 148, 90, 0.25);
     color: var(--text-primary);
 }
 

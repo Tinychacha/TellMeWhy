@@ -3,12 +3,12 @@
    电脑端显示手机框架，手机端全屏
    ======================================== */
 
-/* 外层背景 - 电脑端显示 */
+/* 外层背景 - 黄昏夕暮れ */
 body {
-    background: #0a0a0f;
+    background: #12101a;
 }
 
-/* 电脑端：模糊背景装饰 */
+/* 电脑端：夕暮れ光晕 */
 body::before {
     content: '';
     position: fixed;
@@ -17,8 +17,10 @@ body::before {
     right: 0;
     bottom: 0;
     background:
-        radial-gradient(ellipse at 30% 30%, rgba(90, 143, 207, 0.08) 0%, transparent 50%),
-        radial-gradient(ellipse at 70% 70%, rgba(139, 108, 176, 0.08) 0%, transparent 50%);
+        radial-gradient(ellipse at 50% 0%, rgba(232, 148, 90, 0.12) 0%, transparent 50%),
+        radial-gradient(ellipse at 30% 40%, rgba(212, 112, 122, 0.08) 0%, transparent 45%),
+        radial-gradient(ellipse at 70% 60%, rgba(139, 107, 138, 0.08) 0%, transparent 45%),
+        radial-gradient(ellipse at 50% 100%, rgba(42, 58, 92, 0.15) 0%, transparent 50%);
     pointer-events: none;
     z-index: -1;
 }
@@ -45,13 +47,14 @@ body::before {
     overflow: hidden;
 }
 
-/* 电脑端样式 */
+/* 电脑端样式 - 带夕暮れ光晕的手机边框 */
 @media (min-width: 500px) {
     .phone-frame {
         border-radius: 50px;
         box-shadow:
-            0 0 0 12px #1a1a24,
-            0 0 0 14px #2a2a3a,
+            0 0 0 12px #1e1822,
+            0 0 0 14px #2a2530,
+            0 0 60px rgba(232, 148, 90, 0.08),
             0 30px 60px rgba(0, 0, 0, 0.5),
             0 10px 20px rgba(0, 0, 0, 0.3);
     }
@@ -80,7 +83,7 @@ body::before {
     z-index: 0;
 }
 
-/* 壁纸柔化遮罩 - 更透明、更梦幻 */
+/* 壁纸柔化遮罩 - 夕暮れ色调 */
 .wallpaper::after {
     content: '';
     position: absolute;
@@ -90,12 +93,13 @@ body::before {
     bottom: 0;
     background: linear-gradient(
         180deg,
-        rgba(180, 200, 230, 0.08) 0%,
-        rgba(200, 210, 240, 0.03) 30%,
-        rgba(180, 190, 220, 0.05) 60%,
-        rgba(140, 160, 200, 0.15) 100%
+        rgba(232, 148, 90, 0.06) 0%,
+        rgba(212, 112, 122, 0.04) 25%,
+        rgba(139, 107, 138, 0.05) 50%,
+        rgba(42, 58, 92, 0.12) 100%
     );
     pointer-events: none;
+    animation: twilightPulse 8s ease-in-out infinite;
 }
 
 /* ========================================
@@ -115,7 +119,7 @@ body::before {
     position: absolute;
     width: 3px;
     height: 3px;
-    background: white;
+    background: linear-gradient(135deg, #fff8f0 0%, #ffd4a8 100%);
     border-radius: 50%;
     animation: twinkle var(--duration, 3s) ease-in-out infinite;
     animation-delay: var(--delay, 0s);
@@ -144,7 +148,7 @@ body::before {
     50% {
         opacity: 1;
         transform: scale(1);
-        box-shadow: 0 0 6px 2px rgba(255, 255, 255, 0.6);
+        box-shadow: 0 0 8px 2px rgba(255, 220, 180, 0.7);
     }
 }
 
@@ -349,29 +353,29 @@ body::before {
     z-index: 1;
 }
 
-/* 各App图标颜色 - 淡色系、低饱和度 */
+/* 各App图标颜色 - 黄昏夕暮れ色系 */
 .player-icon {
-    background: linear-gradient(145deg, #e8b4c0 0%, #d4a0ac 50%, #c08a98 100%);
+    background: linear-gradient(145deg, #e89a70 0%, #d47a5a 50%, #b86048 100%);
 }
 
 .messages-icon {
-    background: linear-gradient(145deg, #c8c0dc 0%, #b4aac8 50%, #a094b8 100%);
+    background: linear-gradient(145deg, #c4889a 0%, #a86878 50%, #8a5060 100%);
 }
 
 .diary-icon {
-    background: linear-gradient(145deg, #a8d0d4 0%, #94bcc0 50%, #80a8b0 100%);
+    background: linear-gradient(145deg, #5a7090 0%, #486080 50%, #3a4a68 100%);
 }
 
 .memo-icon {
-    background: linear-gradient(145deg, #c4c4d4 0%, #b0b0c0 50%, #9c9cb0 100%);
+    background: linear-gradient(145deg, #9a8878 0%, #806858 50%, #685048 100%);
 }
 
 .browser-icon {
-    background: linear-gradient(145deg, #b8b8d0 0%, #a4a4bc 50%, #9090a8 100%);
+    background: linear-gradient(145deg, #8a7a90 0%, #6a5a70 50%, #504858 100%);
 }
 
 .calendar-icon {
-    background: linear-gradient(145deg, #d4bcc4 0%, #c0a8b0 50%, #ac94a0 100%);
+    background: linear-gradient(145deg, #d4a870 0%, #b88850 50%, #986838 100%);
 }
 
 /* App名称 */
@@ -383,15 +387,15 @@ body::before {
     letter-spacing: 0.3px;
 }
 
-/* 通知徽章 */
+/* 通知徽章 - 夕暮れ赤 */
 .notification-badge {
     position: absolute;
     top: -4px;
     right: calc(50% - 36px);
     min-width: 18px;
     height: 18px;
-    background: #e53935;
-    color: white;
+    background: linear-gradient(135deg, #d4606a 0%, #b84050 100%);
+    color: #fff8f0;
     font-size: 11px;
     font-weight: 600;
     border-radius: 9px;
@@ -399,7 +403,7 @@ body::before {
     align-items: center;
     justify-content: center;
     padding: 0 5px;
-    box-shadow: 0 2px 8px rgba(229, 57, 53, 0.5);
+    box-shadow: 0 2px 12px rgba(212, 96, 106, 0.5);
     animation: subtleGlow 3s ease-in-out infinite;
 }
 
@@ -417,7 +421,7 @@ body::before {
 }
 
 /* ========================================
-   App视图
+   App视图 - 带黄昏调的深色背景
    ======================================== */
 .app-view {
     position: absolute;
@@ -425,7 +429,7 @@ body::before {
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(12, 15, 22, 0.95);
+    background: rgba(22, 18, 28, 0.96);
     backdrop-filter: blur(40px);
     -webkit-backdrop-filter: blur(40px);
     transform: translateY(100%);
@@ -442,7 +446,7 @@ body::before {
     opacity: 1;
 }
 
-/* App头部 */
+/* App头部 - 夕暮れ深色 */
 .app-header {
     height: calc(var(--status-bar-height) + var(--app-header-height));
     padding-top: calc(env(safe-area-inset-top, 0) + var(--status-bar-height));
@@ -450,10 +454,10 @@ body::before {
     align-items: center;
     padding-left: 8px;
     padding-right: 16px;
-    background: rgba(18, 22, 32, 0.8);
+    background: rgba(26, 21, 32, 0.85);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid rgba(232, 148, 90, 0.1);
     flex-shrink: 0;
 }
 
