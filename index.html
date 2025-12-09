@@ -10,14 +10,14 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@200;300;400;500;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@300;400&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/main.css?v=3">
-    <link rel="stylesheet" href="css/phone.css?v=3">
-    <link rel="stylesheet" href="css/apps/player.css?v=3">
-    <link rel="stylesheet" href="css/apps/messages.css?v=3">
-    <link rel="stylesheet" href="css/apps/diary.css?v=3">
-    <link rel="stylesheet" href="css/apps/memo.css?v=3">
-    <link rel="stylesheet" href="css/apps/browser.css?v=3">
-    <link rel="stylesheet" href="css/apps/calendar.css?v=3">
+    <link rel="stylesheet" href="css/main.css?v=4">
+    <link rel="stylesheet" href="css/phone.css?v=4">
+    <link rel="stylesheet" href="css/apps/player.css?v=4">
+    <link rel="stylesheet" href="css/apps/messages.css?v=4">
+    <link rel="stylesheet" href="css/apps/diary.css?v=4">
+    <link rel="stylesheet" href="css/apps/memo.css?v=4">
+    <link rel="stylesheet" href="css/apps/browser.css?v=4">
+    <link rel="stylesheet" href="css/apps/calendar.css?v=4">
 </head>
 <body>
     <div class="phone-container">
@@ -788,7 +788,6 @@
 
             // 加载音频 - iOS Safari 完全兼容方案
             // iOS Safari 对跨域音频有严格限制，不使用 crossOrigin
-            // 直接设置 src，不等待 Promise（iOS 需要用户交互后才能获取 duration）
             audio.removeAttribute('crossOrigin');
             audio.preload = 'auto';
             audio.src = track.audioFile;
@@ -799,21 +798,22 @@
                 totalTimeEl.textContent = track.duration;
             }
 
-            // 尝试加载音频（非阻塞）
-            audio.load();
-
-            // 恢复进度（如果有）
-            const saved = getPlayerProgress(track.id);
-            if (saved && saved.time > 10) {
-                // 延迟设置 currentTime，等待音频部分加载
-                const tryRestoreProgress = () => {
-                    if (audio.readyState >= 1) {
+            // iOS Safari 要求在用户交互事件中直接调用 play()
+            // 所以在设置 src 后立即尝试播放
+            const playPromise = audio.play();
+            if (playPromise !== undefined) {
+                playPromise.then(() => {
+                    console.log('[Audio] Auto-play started');
+                    // 恢复进度（如果有）
+                    const saved = getPlayerProgress(track.id);
+                    if (saved && saved.time > 10) {
                         audio.currentTime = saved.time;
-                    } else {
-                        setTimeout(tryRestoreProgress, 100);
                     }
-                };
-                tryRestoreProgress();
+                }).catch((error) => {
+                    console.error('[Audio] Auto-play failed:', error.name, error.message);
+                    // 失败时尝试加载，用户需要手动点击播放
+                    audio.load();
+                });
             }
 
             // 显示播放视图
