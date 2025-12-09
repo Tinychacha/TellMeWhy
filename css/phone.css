@@ -69,21 +69,21 @@ body::before {
     }
 }
 
-/* 壁纸背景 */
+/* 壁纸背景 - 夜空与云 */
 .wallpaper {
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background-image: url('../Graph/IMG_8473.JPEG');
+    background-image: url('../Graph/IMG_8477.JPEG');
     background-size: cover;
-    background-position: center;
+    background-position: center top;
     background-repeat: no-repeat;
     z-index: 0;
 }
 
-/* 壁纸柔化遮罩 - 夕暮れ色调 */
+/* 壁纸柔化遮罩 - 夜空与暖光融合 */
 .wallpaper::after {
     content: '';
     position: absolute;
@@ -93,13 +93,12 @@ body::before {
     bottom: 0;
     background: linear-gradient(
         180deg,
-        rgba(232, 148, 90, 0.06) 0%,
-        rgba(212, 112, 122, 0.04) 25%,
-        rgba(139, 107, 138, 0.05) 50%,
-        rgba(42, 58, 92, 0.12) 100%
+        rgba(20, 25, 40, 0.3) 0%,
+        rgba(30, 35, 55, 0.15) 30%,
+        rgba(232, 148, 90, 0.08) 60%,
+        rgba(212, 180, 160, 0.2) 100%
     );
     pointer-events: none;
-    animation: twilightPulse 8s ease-in-out infinite;
 }
 
 /* ========================================
@@ -224,21 +223,21 @@ body::before {
 }
 
 .date-main {
-    font-size: 56px;
-    font-weight: 200;
-    letter-spacing: 4px;
+    font-size: 52px;
+    font-weight: 700;
+    letter-spacing: 2px;
     color: var(--text-primary);
-    text-shadow: 0 2px 15px rgba(0, 0, 0, 0.4);
+    text-shadow: 0 2px 20px rgba(0, 0, 0, 0.5), 0 4px 30px rgba(0, 0, 0, 0.3);
     line-height: 1.1;
 }
 
 .date-sub {
-    font-size: 18px;
-    font-weight: 300;
-    letter-spacing: 6px;
+    font-size: 16px;
+    font-weight: 500;
+    letter-spacing: 4px;
     color: var(--text-secondary);
-    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.4);
-    margin-top: 10px;
+    text-shadow: 0 1px 10px rgba(0, 0, 0, 0.5);
+    margin-top: 12px;
 }
 
 /* 诗句 */
@@ -293,6 +292,28 @@ body::before {
     transform: scale(0.92);
 }
 
+/* 猫头图标容器 */
+.cat-icon {
+    width: var(--icon-size);
+    height: var(--icon-size);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
+    transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.cat-icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+.app-icon:hover .cat-icon {
+    filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.5));
+}
+
+/* 保留旧的 icon-bg 样式以备后用 */
 .icon-bg {
     width: var(--icon-size);
     height: var(--icon-size);
@@ -345,37 +366,12 @@ body::before {
 }
 
 .icon-bg svg {
-    width: 28px;
-    height: 28px;
-    color: white;
-    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+    width: 32px;
+    height: 32px;
+    color: #1a1520;
+    filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.15));
     position: relative;
     z-index: 1;
-}
-
-/* 各App图标颜色 - 黄昏夕暮れ色系 */
-.player-icon {
-    background: linear-gradient(145deg, #e89a70 0%, #d47a5a 50%, #b86048 100%);
-}
-
-.messages-icon {
-    background: linear-gradient(145deg, #c4889a 0%, #a86878 50%, #8a5060 100%);
-}
-
-.diary-icon {
-    background: linear-gradient(145deg, #5a7090 0%, #486080 50%, #3a4a68 100%);
-}
-
-.memo-icon {
-    background: linear-gradient(145deg, #9a8878 0%, #806858 50%, #685048 100%);
-}
-
-.browser-icon {
-    background: linear-gradient(145deg, #8a7a90 0%, #6a5a70 50%, #504858 100%);
-}
-
-.calendar-icon {
-    background: linear-gradient(145deg, #d4a870 0%, #b88850 50%, #986838 100%);
 }
 
 /* App名称 */
